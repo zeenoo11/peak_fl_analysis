@@ -30,12 +30,23 @@ baseline most directly comparable to v03's F2a.
 |---|---|---|
 | **FedProx** (Li et al., MLSys'20) | FedAvg + proximal term for non-IID stability | tests whether the non-IID gap (per-apt z-norm + per-apt distribution) helps Peak-Aware VQ |
 | **Ditto** (Li et al., ICML'21) | global + per-client local with regularization between them | a stronger personalization point than FedRep — directly competes with v03 F2c (LoRA) |
-| **FedHiP** (arxiv:2508.04470) | frozen foundation pretrain + cold-side head only | **this is the framing v02/v03 already implicitly use** — making it explicit lets v04 say "v01–v03 method = FedHiP + Peak-VQ" |
 
-The FedHiP row is especially valuable: v02 §2.2 already recasts the v01
-backbone as "centrally pretrained, frozen shared encoder = FedHiP". An
-explicit FedHiP baseline column (without the Peak-VQ correction) makes
-the v01/v02/v03 contribution a clean delta over a published FL pattern.
+**FedHiP excluded from v04 baselines** (decision 2026-04-28). The v04
+plan originally listed FedHiP (arxiv:2508.04470) as a Tier 2 baseline
+under the framing "frozen foundation pretrain + cold-side head only".
+Reading the FedHiP paper itself shows the algorithm is built around
+**closed-form analytic solutions (gradient-free)** — fundamentally
+different from v01-v03's gradient-based NBEATSx training. Therefore:
+
+- v04 paper §results does not include a "FedHiP" row, to avoid
+  misrepresenting the FedHiP-paper algorithm.
+- The "v01-v03 already implicitly adopts FedHiP-style framing" claim
+  in v02 §2.2 / §5.1 remains a paper-level claim and is flagged as
+  **needing a separate analysis** (not a baseline cell). That analysis
+  is out of v04's coding scope but tracked as a follow-up writing
+  task in `papers/v04_draft/` — the user's papers rest on this
+  framing, so the eventual analytical comparison of "v01-v03 method
+  vs FedHiP-paper algorithm" is owed.
 
 ### Non-NBEATSx neural-forecasting baselines (TBD — brainstorming)
 
@@ -69,7 +80,7 @@ one heterogeneity computation on the train data.
 | Analysis | What it answers | Where it shows up |
 |---|---|---|
 | **Heterogeneity quantification** | Pairwise Wasserstein-1 / KL / peak-shape similarity on train households, with correlation against the local-only-vs-shared gap. Defends "personalization is needed" empirically — currently framing-only in v02 §5.1. | Paper §motivation; figure (heatmap + correlation plot) |
-| **Communication-cost accounting** | Bytes-per-round and total bytes for v02's 1-shot codebook vs FedAvg / FedRep / FedProx / Ditto / FedHiP. Quantifies v02's "1 boundary cross" efficiency claim relative to iterative FL. | Paper §results; table |
+| **Communication-cost accounting** | Bytes-per-round and total bytes for v02's 1-shot codebook vs FedAvg / FedRep / FedProx / Ditto. Quantifies v02's "1 boundary cross" efficiency claim relative to iterative FL. | Paper §results; table |
 
 These close PFL design axes that v02 currently asserts only in framing:
 heterogeneity (why personalization is needed) and the communication
