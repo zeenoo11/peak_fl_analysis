@@ -82,160 +82,20 @@ if str(SRC_DIR) not in sys.path:
 
 import numpy as np
 import torch
-from sklearn.neighbors import NearestNeighbors
-from torch.utils.data import DataLoader
 
-from config import OUTPUT_DIR, RANDOM_SEED, TRAIN_RATIO
+from config import OUTPUT_DIR, RANDOM_SEED
 from dataloader.splits import load_v02_split
-from dataloader.umass import HouseholdDataset, load_apartment_hourly
+from eval.cold_helpers import (
+    OPERATING_POINTS,
+    gather_cold,
+    gauss_template,
+    metrics_z_to_kw,
+    route_R0,
+)
 from models.nbeatsx_aux import NBEATSxAux
-from probes.peak_descriptor import extract_key
-from utils.metrics import compute_hr, compute_mae, compute_pape
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 V02_OUT_ROOT = OUTPUT_DIR / "v02_fl_8020_ratio"
-
-# v01 carry-over 두 op-point. 04의 OPERATING_POINTS와 비트 동일하게 유지해야
-# "06의 W5 결과 == 04의 W5 결과 (R0 routing)"가 성립. cold split에서 (σ, α_v0, α_w1)
-# 재튜닝은 plan §"Non-goals"에서 명시적으로 금지 — v01 §5.4.1 selection bias.
-#
-# V0-only는 α_v0만 살리고 (α_w1=0), W1a-only는 α_w1만 살리고 (α_v0=0), W5는 둘 다 사용.
-# **세 메커니즘 모두 동일 op-point의 동일 α 값을 사용** → 단독 vs hybrid의 시너지를
-# "α 차이"가 아니라 "두 항의 합산 효과" 자체로 측정.
-OPERATING_POINTS = {
-    "HR-preserving": {"sigma": 3.0, "alpha_v0": 1.0, "alpha_w1": 0.1},
-    "PAPE-aggressive": {"sigma": 3.0, "alpha_v0": 1.5, "alpha_w1": 0.5},
-}
-
-
-def gather_cold(
-    apts: list[str],
-    model: NBEATSxAux,
-    batch: int = 256,
-    stride: int = 24,
-) -> dict[str, np.ndarray]:
-    """Same protocol as 04_coldstart_eval.py:gather_cold (warm-start z-norm, stride=24).
-
-    (한글) 04의 ``gather_cold``를 그대로 복제한 함수 — cold apt 각각에 대해
-    자기 시계열 앞 70% (``TRAIN_RATIO``)에서 추정한 per-apt z-norm 통계로
-    ``stride=24`` 슬라이딩 윈도우를 만들고 frozen T2를 한 번 통과시켜 다음을 수집:
-
-        - ``h_g``     : ``h_generic`` ∈ ℝ^{N×64} — 본 06번에선 직접 쓰진 않으나
-                        04와 동일 시그니처 유지를 위해 수집.
-        - ``y_hat_z`` : z-norm space ŷ_base.
-        - ``y_true_z``: ground truth (z-norm). denorm 후 PAPE/HR 계산에 사용.
-        - ``pred_amp``, ``pred_hr`` : aux head (â, ĥ_int) — W1a/W5 Gaussian 입력.
-        - ``key``     : 5-d KEY — R0 routing 입력.
-        - ``mean``, ``std`` : per-window denorm 통계.
-
-    설계 메모:
-        - **04와 동일 프로토콜**: warm-start z-norm + stride=24 + frozen forward.
-          따라서 같은 codebook + 같은 op-point에서의 W5 결과는 04의 R0 W5와 비트 동일.
-        - cold-side 학습 없음 (``model.eval()`` + ``torch.no_grad()``) — FedHiP 프레이밍.
-        - 04의 ``gather_cold``는 추가로 ``apt`` (윈도우 출처) 배열을 수집하지만
-          06은 cold 윈도우 단위 평균만 사용하므로 생략.
-
-    NOTE (engineer): 04의 헬퍼와 **import 공유 없이 복붙**된 상태.
-    drift 위험 → src로 빼는 리팩터링은 별도 작업.
-    """
-    h_chunks, yhat_chunks, ytrue_chunks = [], [], []
-    amp_chunks, hr_chunks, key_chunks = [], [], []
-    mean_chunks, std_chunks = [], []
-    for apt in apts:
-        try:
-            series = load_apartment_hourly(apt).values.astype(np.float32)
-        except FileNotFoundError:
-            continue
-        n = len(series)
-        train_end = int(n * TRAIN_RATIO)
-        seg = series[:train_end]
-        # per-apt z-norm: cold 자신의 train segment에서만 추정 (cold future label 미사용).
-        m_ = float(seg.mean())
-        s_ = float(seg.std()) if seg.std() > 1e-8 else 1.0
-        # stride=24: 비중첩 — 04 / 03 codebook fit과 동일.
-        ds = HouseholdDataset(seg, m_, s_, stride=stride)
-        if len(ds) == 0:
-            continue
-        for x, y in DataLoader(ds, batch_size=batch, shuffle=False):
-            x_dev = x.to(DEVICE)
-            with torch.no_grad():
-                # T2 forward: (ŷ_base_z, hiddens, (â, ĥ_logits)). aux head 출력 (â, ĥ)는
-                # 06의 W1a/W5 Gaussian template center/amplitude로 직결.
-                y_hat, hiddens, (amp_p, hr_p) = model(x_dev)
-            h_chunks.append(hiddens["h_generic"].cpu().numpy())
-            yhat_chunks.append(y_hat.cpu().numpy())
-            ytrue_chunks.append(y.numpy())
-            amp_chunks.append(amp_p.cpu().numpy().reshape(-1))
-            # hr_pred: 24-class CE logits → argmax로 정수 시각 ĥ_int (Gaussian center).
-            hr_chunks.append(hr_p.argmax(dim=1).cpu().numpy())
-            # KEY는 입력 x로부터 직접 계산 — backbone 호출 불필요 (input-only 5-d 디스크립터).
-            key_chunks.append(extract_key(x.numpy()))
-            mean_chunks.append(np.full(len(y), m_, dtype=np.float32))
-            std_chunks.append(np.full(len(y), s_, dtype=np.float32))
-    return {
-        "h_g": np.concatenate(h_chunks, axis=0).astype(np.float32),
-        "y_hat_z": np.concatenate(yhat_chunks, axis=0).astype(np.float32),
-        "y_true_z": np.concatenate(ytrue_chunks, axis=0).astype(np.float32),
-        "pred_amp": np.concatenate(amp_chunks, axis=0).astype(np.float32),
-        "pred_hr": np.concatenate(hr_chunks, axis=0).astype(np.int64),
-        "key": np.concatenate(key_chunks, axis=0).astype(np.float32),
-        "mean": np.concatenate(mean_chunks, axis=0),
-        "std": np.concatenate(std_chunks, axis=0),
-    }
-
-
-def gauss_template(pred_hr: np.ndarray, pred_amp: np.ndarray, sigma: float, length: int = 24) -> np.ndarray:
-    """W1a/W5의 Gaussian template ``g(t; ĥ, â, σ) = â · exp(-(t-ĥ)²/2σ²)``.
-
-    (한글) max-normalize 후 amplitude 곱셈으로 ``g.max(axis=1) == pred_amp`` 보장
-    (W family 규약 — v01 §iter4와 비트 정확). σ는 op-point 무관 3.0 carry-over.
-
-    NOTE: 04와 동일 구현 (복붙). v01 09_iter4_mechanisms.py의 ``gauss_template``과는
-    σ default만 다르고 (v01: 1.5, v02: 3.0 op-point 값) 계산 식은 동일.
-    """
-    # t shape: (1, length=24). pred_hr는 정수 시각 (aux head argmax).
-    t = np.arange(length, dtype=np.float32)[None, :]
-    # 표준 가우시안 (broadcast: B × length).
-    g = np.exp(-0.5 * ((t - pred_hr.astype(np.float32)[:, None]) / sigma) ** 2)
-    # max-normalize → 곱한 후 g.max == pred_amp 보장.
-    g = g / g.max(axis=1, keepdims=True)
-    return (g * pred_amp[:, None]).astype(np.float32)
-
-
-def metrics_z_to_kw(true_z, pred_z, mean_arr, std_arr) -> dict:
-    """z-norm space → kW 단위로 denorm 후 PAPE/HR@1/HR@2/MAE 계산.
-
-    (한글) plan §"Metrics" — PAPE는 kW 기준 (v01 §4.1과 비트 정확).
-    ``compute_pape``/``compute_hr``는 ``Peak_Analysis``로부터의 비트 정확 포팅이며
-    수정 금지 (CLAUDE.md). 04의 동명 함수와 비트 동일.
-    """
-    # per-window broadcasting: (N, H) * (N, 1) + (N, 1).
-    true_kw = true_z * std_arr[:, None] + mean_arr[:, None]
-    pred_kw = pred_z * std_arr[:, None] + mean_arr[:, None]
-    return {
-        "pape": float(compute_pape(true_kw, pred_kw)),
-        "hr@1": float(compute_hr(true_kw, pred_kw, tol=1)),
-        "hr@2": float(compute_hr(true_kw, pred_kw, tol=2)),
-        "mae": float(compute_mae(true_kw, pred_kw)),
-    }
-
-
-def route_R0(co_key, key_scaler_mean, key_scaler_scale, key_pool_scaled, train_cluster_idx) -> np.ndarray:
-    """v01과 동일한 R0 routing (KEY 1-NN).
-
-    (한글)
-        1) cold 5-d KEY를 03이 fit/저장한 StandardScaler 파라미터로 정규화 (cold 측
-           재fit 금지 — fair zero-shot).
-        2) scaler-적용 train KEY 풀에서 1-NN 검색.
-        3) 그 이웃 train 윈도우의 ``cluster_idx``를 cold 윈도우의 cluster로 채택.
-    KEY는 input-only이므로 backbone forward 0회. 04의 ``route_R0``와 비트 동일.
-    """
-    # cold KEY를 train 시점 scaler로 정규화 (재fit 금지).
-    co_key_scaled = (co_key - key_scaler_mean) / key_scaler_scale
-    nn = NearestNeighbors(n_neighbors=1).fit(key_pool_scaled)
-    _, neigh_idx = nn.kneighbors(co_key_scaled)
-    # 가장 가까운 train 윈도우의 cluster index를 빌려와 cold 윈도우에 부여.
-    return train_cluster_idx[neigh_idx[:, 0]]
 
 
 def main() -> None:
