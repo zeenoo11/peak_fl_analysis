@@ -52,6 +52,42 @@ def list_available_apartments(year: str = "2016") -> list[str]:
     return stems
 
 
+def filter_valid_apartments(
+    apts: list[str],
+    year: str = "2016",
+    min_hours: int = 7000,
+) -> list[str]:
+    """Filter apts with sufficient data coverage.
+
+    Mirrors Peak_Analysis/src/peak_analysis/community.py:filter_valid_apartments —
+    file-size-based heuristic (≈ 35 bytes per minute row), which is what v10's
+    households YAML was built against. Using the same heuristic keeps v02's 100-apt
+    pool identical to v10's pool.
+
+    Args:
+        apts:      Apartment names (e.g. ['Apt1', 'Apt2', ...]).
+        year:      Data year string, default '2016'.
+        min_hours: Minimum estimated coverage (≈ 7000 hours ≈ 292 days).
+
+    Returns:
+        Filtered list preserving the original order.
+    """
+    valid: list[str] = []
+    for apt in apts:
+        path = UMASS_DIR / year / f"{apt}_{year}.csv"
+        if not path.exists():
+            continue
+        try:
+            size_kb = path.stat().st_size / 1024.0
+            estimated_minutes = size_kb / 0.035
+            estimated_hours = estimated_minutes / 60.0
+            if estimated_hours >= min_hours:
+                valid.append(apt)
+        except OSError:
+            continue
+    return valid
+
+
 def load_apartment_hourly(apt_name: str, year: str = "2016") -> pd.Series:
     """Load one household, resampled to hourly mean (kW)."""
     path = UMASS_DIR / year / f"{apt_name}_{year}.csv"

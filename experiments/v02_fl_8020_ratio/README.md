@@ -11,19 +11,19 @@ experimental plan.
 
 ## Status
 
-Scaffolding only — scripts to be added.
+In progress. All scripts run **per-seed** (`--seed S`); the {42, 123, 7} sweep is driven by a launcher / executor, never hardcoded inside the scripts.
 
-## Planned script order
+## Script order
 
-| # | Script | Purpose |
-|---|---|---|
-| 01 | `01_make_split.py` | Generate stratified 80:20 split, write `outputs/v02_fl_8020_ratio/splits/v02_8020.yaml`. |
-| 02 | `02_train_arms.py` | Train T0 (no peak_aux) and T2 (with peak_aux) at 80:20, 3 seeds. Adapter over v01's `01_train_arms.py`. |
-| 03 | `03_fit_codebook.py` | Fit M=32 KMeans codebook on T2 latents per seed. |
-| 04 | `04_coldstart_eval.py` | Cold zero-shot inference, both operating points × {R0 KEY-NN, R1 h_g direct}. |
-| 05 | `05_E1_ablation.py` | peak_aux ON/OFF V0-mechanism ablation at 80:20 (matches v01 §4.3). |
-| 06 | `06_aggregate_seeds.py` | Multi-seed mean ± std summary. |
-| 07 | `07_make_v02_figures.py` | Generate F1–F4 figures for `papers/figures/`. |
+| # | Script | Purpose | State |
+|---|---|---|---|
+| 01 | `01_make_split.py` | Generate stratified 80:20 split per seed → `outputs/v02_fl_8020_ratio/splits/v02_8020_seed{S}.yaml` and a refreshed `split_summary.json` (KMeans random_state = `--seed`, KL gate retries with seed+1). | **done** — 3 seeds (KL ≤ 0.33, cold-set Jaccard 0.08–0.14). |
+| 02 | `02_train_arms.py` | Train T0 (no peak_aux) and T2 (with peak_aux) at 80:20 for one seed. Adapter over v01's `01_train_arms.py`. | **code ready** — 1-epoch smoke test passed on seed=42; full run pending. |
+| 03 | `03_fit_codebook.py` | Fit M=32 KMeans codebook on T2 latents per seed. | TODO |
+| 04 | `04_coldstart_eval.py` | Cold zero-shot inference, both operating points × {R0 KEY-NN, R1 h_g direct}. | TODO |
+| 05 | `05_E1_ablation.py` | peak_aux ON/OFF V0-mechanism ablation at 80:20 (matches v01 §4.3). | TODO |
+| 06 | `06_aggregate_seeds.py` | Multi-seed mean ± std summary. | TODO |
+| 07 | `07_make_v02_figures.py` | Generate F1–F4 figures for `papers/figures/`. | TODO |
 
 ## Key delta from v01
 
