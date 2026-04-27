@@ -59,6 +59,22 @@ The FM axis answers "is the v01/v02 method actually better than just
 asking a foundation model with no UMass-specific training?" — a question
 v01/v02/v03 explicitly deferred.
 
+### Motivation and efficiency analysis
+
+Two analyses orthogonal to the model-comparison axes above. Both
+strengthen the PFL framing without adding a model arm — they are
+bookkeeping over the baselines already trained in this version, plus
+one heterogeneity computation on the train data.
+
+| Analysis | What it answers | Where it shows up |
+|---|---|---|
+| **Heterogeneity quantification** | Pairwise Wasserstein-1 / KL / peak-shape similarity on train households, with correlation against the local-only-vs-shared gap. Defends "personalization is needed" empirically — currently framing-only in v02 §5.1. | Paper §motivation; figure (heatmap + correlation plot) |
+| **Communication-cost accounting** | Bytes-per-round and total bytes for v02's 1-shot codebook vs FedAvg / FedRep / FedProx / Ditto / FedHiP. Quantifies v02's "1 boundary cross" efficiency claim relative to iterative FL. | Paper §results; table |
+
+These close PFL design axes that v02 currently asserts only in framing:
+heterogeneity (why personalization is needed) and the communication
+subaxis (how much federation costs).
+
 ## Open design decisions (for brainstorming)
 
 1. **Common evaluation pool.** v04 must reuse the v02 80:20 split + the
@@ -74,6 +90,13 @@ v01/v02/v03 explicitly deferred.
 5. **Ablation: Peak-Aware VQ on top of FedAvg / FedRep.** Worth a row?
    It would show that the v01 method is *complementary* to FL training
    schemes, not in competition with them.
+6. **Communication-cost measurement scope.** Bytes-per-round + total
+   bytes for each FL baseline + the 1-shot codebook upload of v02.
+   If v03 K-shot results are available by paper deadline, an
+   adaptation-time bytes row can be added — by design v03 is fully
+   local (0 upload bytes), which would reinforce the "1 boundary
+   cross" framing in the joint paper. This row is conditional and not
+   a hard dependency.
 
 ## Deliverables (target)
 

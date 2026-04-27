@@ -51,6 +51,21 @@ delta over each baseline group.
 Peak-VQ is *complementary* to FL training schemes rather than a
 replacement.
 
+**G6.** **Heterogeneity quantification** (motivation analysis, no new
+model arm). Compute pairwise Wasserstein-1 / KL / peak-shape similarity
+across the 80 train households and correlate the resulting heterogeneity
+with the local-only-vs-shared cold-PAPE gap. Defends the
+"personalization is needed" claim that v02 §5.1 currently asserts only
+on framing grounds. Seed-independent (computed once from train data, no
+model dependence).
+
+**G7.** **Communication-cost accounting** (efficiency analysis, no new
+model arm). Bytes-per-round and total bytes for v02's 1-shot codebook
+upload vs. each FL baseline (FedAvg / FedRep / FedProx / Ditto /
+FedHiP). Quantifies v02's "1 boundary cross" efficiency claim against
+iterative FL. Seed-independent (depends on parameter counts and
+protocol, not on the random seed).
+
 ## FL baselines
 
 **Common protocol (all FL baselines).** 80 train apts are clients;
@@ -128,6 +143,23 @@ Open question: at least one each from the *autoregressive token*
 family (Chronos) and the *patch-based regressor* family (TimesFM) seems
 the minimum useful sweep.
 
+## Motivation and efficiency analysis (G6 + G7)
+
+Two analyses orthogonal to the model-comparison axes (G1–G5). Both
+strengthen the PFL framing without adding a model arm — they are
+bookkeeping over the baselines already trained in this version, plus
+one heterogeneity computation on the train data.
+
+| Analysis | Question answered | Inputs | Output |
+|---|---|---|---|
+| **G6 Heterogeneity** | Are the 80 train households heterogeneous enough that personalization is *needed*? Is heterogeneity correlated with the (Local-only minus Shared) cold-PAPE gap? | per-apt time series statistics (Wasserstein-1, KL, peak-shape similarity over train segments); cold-PAPE per-cell from §G1/G2 | heatmap (apt × apt similarity); scatter of heterogeneity quartile vs. local-only-vs-shared gap |
+| **G7 Communication cost** | Bytes-per-round and total bytes for v02's 1-shot codebook upload vs. iterative FL (FedAvg / FedRep / FedProx / Ditto / FedHiP). | parameter counts of each FL backbone; FL simulation protocol (rounds × local_steps); v02 codebook size (32 × 64 + offsets + KEY pool) | comparison table (rows: methods; cols: bytes/round, n_rounds, total bytes, boundary crosses) |
+
+Both are **seed-independent** — G6 depends on train-data statistics
+only, G7 depends on parameter counts and the FL simulation protocol.
+Neither requires re-running the 3-seed sweep, so they sit outside the
+per-seed pipeline below and are computed once.
+
 ## Method axes (orthogonal)
 
 ```
@@ -194,6 +226,8 @@ outputs/v04_full_baseline_comparison/
 │   ├── fm_chronos/cold_metrics.json
 │   ├── fm_timesfm/cold_metrics.json
 │   └── peakvq_on_{fedavg,fedrep,fedhip}/cold_metrics.json    # G5 cross-cell
+├── heterogeneity_summary.json                                # G6 (seed-independent)
+├── communication_summary.json                                # G7 (seed-independent)
 ├── multiseed_summary.json
 └── FINAL_v04_report.md
 ```
@@ -202,9 +236,14 @@ outputs/v04_full_baseline_comparison/
 
 1. **`papers/v04_draft/v04_full_baseline_comparison.md`** + IEEE `.tex`.
 2. **Pareto plots**: `papers/v04_draft/figures/v04_F*.png`
-   - F1: PAPE × HR@1 Pareto across all baselines + ours.
+   - F1: PAPE × HR@1 Pareto across all baselines + ours (G1–G4).
    - F2: G5 cross-cell — Peak-VQ delta on FedAvg / FedRep / FedHiP.
    - F3: NF / FM zero-shot vs trained comparison.
+   - F4: **G6 heterogeneity heatmap** + scatter of heterogeneity vs.
+     (Local-only − Shared) cold-PAPE gap — appears in paper §motivation.
+3. **Communication cost table** (G7) — embedded in paper §results
+   alongside the cold-PAPE comparison; backed by
+   `outputs/v04_full_baseline_comparison/communication_summary.json`.
 
 ## Open questions
 
@@ -244,6 +283,14 @@ D. **Tier 2 inclusion gate.** FedProx / Ditto / FedHiP add ~3× FL
    work. Default to "ship Tier 1 first, Tier 2 added once Tier 1
    results are stable across 3 seeds".
 
+E. **Communication-cost measurement scope (G7).** Bytes-per-round +
+   total bytes for each FL baseline + the 1-shot codebook upload of
+   v02. If v03 K-shot results are available by paper deadline, an
+   adaptation-time bytes row can be added — by design v03 is fully
+   local (0 upload bytes), which would reinforce the "1 boundary
+   cross" framing. This row is **conditional** on v03 results and not
+   a hard dependency for v04 ship.
+
 ## Detailed plan (build order)
 
 | Step | Module | Purpose | Tests / verify |
@@ -252,9 +299,9 @@ D. **Tier 2 inclusion gate.** FedProx / Ditto / FedHiP add ~3× FL
 | **1** | `src/models/dlinear.py`, `nhits.py`, `crossformer.py` (new) | Direct re-implementation of three NF architectures against their reference papers. | Per-model 1-window forward smoke test in pytest. |
 | **2** | `src/fm/chronos.py`, `timesfm.py` (new) | Zero-shot wrapper exposing the project-uniform interface (`forecast(x_window) -> y_kw[24]`, where `x_window` is denormalised cold input). | One real forecast per FM on a cold apt. |
 | **3** | `src/fl/__init__.py` + per-algorithm files (FedAvg / FedRep / FedProx / Ditto / FedHiP / Local-only) | Self-contained FL simulator: client = apt, round = pooled local steps + parameter aggregation. | Convergence dry-run on seed=42 with FedAvg. |
-| **4** | `experiments/v04_full_baseline_comparison/` scripts | `01_fl_train.py`, `02_nf_train.py`, `03_fm_zero_shot.py`, `04_peakvq_on_fl.py` (G5), `05_aggregate.py`, `06_make_v04_figures.py`. Per-seed argparse, v02 split YAMLs reused. | Smoke test seed=42 each script. |
-| **5** | 3-seed sweep, all baselines | Tier 1 (3 FL + 3 NF + 2 FM = 8) × 3 seeds = 24 cells. + Tier 2 (3 FL = 9 cells) + G5 (3 cross-cell × 3 seeds = 9 cells). Total: 24 (Tier 1) + 9 (Tier 2) + 9 (G5) = **42 cells**. | `multiseed_summary.json`. |
-| **6** | `papers/v04_draft/v04_full_baseline_comparison.{md,tex}` + figures | Pareto plot, cross-cell, vs v01–v03. | Final paper draft. |
+| **4** | `experiments/v04_full_baseline_comparison/` scripts | `01_fl_train.py`, `02_nf_train.py`, `03_fm_zero_shot.py`, `04_peakvq_on_fl.py` (G5), `05_heterogeneity.py` (G6, **seed-independent**, computed once), `06_communication.py` (G7, **seed-independent**, computed once), `07_aggregate.py`, `08_make_v04_figures.py`. Per-seed argparse for 01–04; 05/06 take no `--seed` because they only depend on train data + protocol. v02 split YAMLs reused. | Smoke test seed=42 for 01–04; one-shot run for 05/06. |
+| **5** | 3-seed sweep, all baselines | Tier 1 (3 FL + 3 NF + 2 FM = 8) × 3 seeds = 24 cells. + Tier 2 (3 FL = 9 cells) + G5 (3 cross-cell × 3 seeds = 9 cells). Total: 24 (Tier 1) + 9 (Tier 2) + 9 (G5) = **42 cells**. G6/G7 computed once each (not in this count). | `multiseed_summary.json`, `heterogeneity_summary.json`, `communication_summary.json`. |
+| **6** | `papers/v04_draft/v04_full_baseline_comparison.{md,tex}` + figures | Pareto plot, cross-cell, NF/FM vs trained, **heterogeneity figure (G6)**, **communication table (G7)**, vs v01–v03. | Final paper draft. |
 
 ## Dependencies
 
