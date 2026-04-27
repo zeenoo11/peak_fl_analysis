@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual envs / package managers ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Raw data (NEVER push) ---
+# UMass Smart*, weather, KSG, etc. — PII / license restricted
+data/
+!data/.gitkeep
+
+# --- Experiment outputs (checkpoints, logs, intermediate results) ---
+# Reproducible from scripts; do not bloat repo
+outputs/
+!outputs/.gitkeep
+
+# --- Logs ---
+*.log
+
+# --- Local Claude / MCP config (user-specific paths) ---
+.claude/
+.mcp.json
+
+# --- Cached arxiv / PDFs ---
+*.pdf
+!papers/**/*.pdf
+
+# --- Build artifacts ---
+build/
+dist/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- Plotting / temp ---
+*.tmp
+.tmp/
