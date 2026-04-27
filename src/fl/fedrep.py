@@ -131,7 +131,7 @@ def _local_fedrep(
             (p for p in model.parameters() if p.requires_grad),
             lr=cfg.lr, weight_decay=cfg.weight_decay,
         )
-        d = run_local_epochs(model, loader, opt_head, n_epochs=cfg.head_epochs)
+        d = run_local_epochs(model, loader, opt_head, n_epochs=cfg.head_epochs, use_amp=cfg.use_amp)
         sum_main += d["main_loss_mean"] * d["n_batches"]
         n_batches += d["n_batches"]
 
@@ -142,7 +142,7 @@ def _local_fedrep(
             (p for p in model.parameters() if p.requires_grad),
             lr=cfg.lr, weight_decay=cfg.weight_decay,
         )
-        d = run_local_epochs(model, loader, opt_enc, n_epochs=rep_epochs)
+        d = run_local_epochs(model, loader, opt_enc, n_epochs=rep_epochs, use_amp=cfg.use_amp)
         sum_main += d["main_loss_mean"] * d["n_batches"]
         n_batches += d["n_batches"]
 
@@ -225,7 +225,7 @@ def train_fedrep(
     mean_head = weighted_average(head_states, head_weights)
     cold_state = _merge(encoder_state, mean_head)
     apply_state_dict(global_model, cold_state)
-    cold_metrics = evaluate_cold(global_model, cold_apts)
+    cold_metrics = evaluate_cold(global_model, cold_apts, use_amp=cfg.use_amp)
 
     return {
         "algorithm": "fedrep",

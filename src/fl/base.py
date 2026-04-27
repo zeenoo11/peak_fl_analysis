@@ -67,16 +67,25 @@ class FLConfig:
     """Common FL hyperparameters; per-algorithm files extend with extra fields.
 
     Defaults follow the FedAvg literature norm cited in v04 plan §Open-B
-    (rounds=20, local_epochs=2, batch=256, lr=1e-3) — adjust during a
-    convergence dry-run if needed.
+    (rounds=20, local_epochs=2, lr=1e-3) with two v04-specific choices
+    given a 16 GB GTX 5070 Ti:
+      - ``batch_size = 512`` (v04 paper consistency: 2× v01-v03's 256
+        because the FL pipeline runs many short local-train passes; the
+        VRAM headroom lets us push batch up without sacrificing
+        determinism — v01-v03 batch=256 is recoverable by passing
+        ``batch_size=256`` if direct comparison is needed).
+      - ``use_amp = True``  with bfloat16 autocast — bf16 is numerically
+        comparable to fp32 (no GradScaler needed) and gives ~1.5-2x
+        wall-clock on the 5000-series. Toggle off via ``use_amp=False``.
     """
 
     rounds: int = 20
     local_epochs: int = 2
     lr: float = 1e-3
-    batch_size: int = 256
+    batch_size: int = 512
     weight_decay: float = 1e-5
     seed: int = 42
+    use_amp: bool = True
 
     # Aggregation: number of clients sampled per round. 0 means "all" (every
     # train apt participates in every round). UMass has only 80 train apts so
@@ -240,6 +249,7 @@ def run_local_epochs(
     optimizer: torch.optim.Optimizer,
     n_epochs: int,
     extra_loss_fn: callable | None = None,
+    use_amp: bool = True,
 ) -> dict:
     """Run ``n_epochs`` of local SGD on this client's loader.
 
@@ -247,24 +257,36 @@ def run_local_epochs(
     files add a regulariser to the loss (e.g. FedProx proximal term, Ditto's
     pull-toward-global, …) without re-implementing the loop.
 
+    ``use_amp=True`` activates bfloat16 autocast on CUDA (no GradScaler
+    needed for bf16). On CPU or when ``use_amp=False`` the loop runs in
+    fp32. Loss values returned are always cast to fp32 floats for stable
+    diagnostic logging.
+
     Returns a small diagnostic dict.
     """
+    use_amp = use_amp and (DEVICE.type == "cuda")
+    amp_ctx = (
+        torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if use_amp
+        else _NullCtx()
+    )
     model.train()
     n_batches = 0
     sum_main = 0.0
     sum_extra = 0.0
     for _ in range(n_epochs):
         for x, y in loader:
-            x = x.to(DEVICE)
-            y = y.to(DEVICE)
-            y_hat, _ = model(x)
-            main = F.l1_loss(y_hat, y)
-            loss = main
-            if extra_loss_fn is not None:
-                extra = extra_loss_fn(model, x, y, y_hat)
-                loss = loss + extra
-                sum_extra += float(extra.item())
-            optimizer.zero_grad()
+            x = x.to(DEVICE, non_blocking=True)
+            y = y.to(DEVICE, non_blocking=True)
+            optimizer.zero_grad(set_to_none=True)
+            with amp_ctx:
+                y_hat, _ = model(x)
+                main = F.l1_loss(y_hat, y)
+                loss = main
+                if extra_loss_fn is not None:
+                    extra = extra_loss_fn(model, x, y, y_hat)
+                    loss = loss + extra
+                    sum_extra += float(extra.item())
             loss.backward()
             optimizer.step()
             sum_main += float(main.item())
@@ -274,6 +296,14 @@ def run_local_epochs(
         "main_loss_mean": sum_main / max(n_batches, 1),
         "extra_loss_mean": sum_extra / max(n_batches, 1) if extra_loss_fn else None,
     }
+
+
+class _NullCtx:
+    """Trivial no-op context manager used when AMP is disabled."""
+
+    def __enter__(self): return self
+
+    def __exit__(self, *a): return False
 
 
 # ============================================================================
@@ -296,11 +326,69 @@ class _ColdWindowDataset(Dataset):
         return self.ds[idx]
 
 
+def evaluate_clients_val(
+    model: torch.nn.Module,
+    clients: Iterable[ClientData],
+    batch_size: int = 512,
+    use_amp: bool = True,
+) -> dict:
+    """Forward each train client's ``val_set`` and aggregate kW metrics.
+
+    This is the **tuning metric** for v04 hyperparameter search: we
+    evaluate on the train apts' val segment (per-apt z-norm using their
+    own train segment, identical to v01 02_train_arms.py's ``eval_per_apt``)
+    so the cold split is **never seen** during tuning. Decision quality
+    follows v01 §5.4.1 — cold-side selection bias is avoided.
+
+    Same return schema as ``evaluate_cold`` so the launcher can compare
+    them side-by-side in the tuning JSON.
+    """
+    use_amp = use_amp and (DEVICE.type == "cuda")
+    amp_ctx = (
+        torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if use_amp
+        else _NullCtx()
+    )
+    model.eval()
+    true_chunks, pred_chunks, mean_chunks, std_chunks = [], [], [], []
+    n_apts_seen = 0
+    for client in clients:
+        if len(client.val_set) == 0:
+            continue
+        n_apts_seen += 1
+        loader = DataLoader(client.val_set, batch_size=batch_size, shuffle=False)
+        for x, y in loader:
+            with torch.no_grad(), amp_ctx:
+                y_hat, _ = model(x.to(DEVICE, non_blocking=True))
+            true_chunks.append(y.numpy())
+            pred_chunks.append(y_hat.float().cpu().numpy())
+            mean_chunks.append(np.full(len(y), client.mean, dtype=np.float32))
+            std_chunks.append(np.full(len(y), client.std, dtype=np.float32))
+    if not true_chunks:
+        return {"pape": float("nan"), "hr@1": float("nan"), "hr@2": float("nan"),
+                "mae": float("nan"), "n_val_windows": 0, "n_train_apts": 0}
+    t_z = np.concatenate(true_chunks, axis=0)
+    p_z = np.concatenate(pred_chunks, axis=0)
+    m_arr = np.concatenate(mean_chunks, axis=0)
+    s_arr = np.concatenate(std_chunks, axis=0)
+    t_kw = t_z * s_arr[:, None] + m_arr[:, None]
+    p_kw = p_z * s_arr[:, None] + m_arr[:, None]
+    return {
+        "pape": float(compute_pape(t_kw, p_kw)),
+        "hr@1": float(compute_hr(t_kw, p_kw, tol=1)),
+        "hr@2": float(compute_hr(t_kw, p_kw, tol=2)),
+        "mae": float(compute_mae(t_kw, p_kw)),
+        "n_val_windows": int(t_z.shape[0]),
+        "n_train_apts": int(n_apts_seen),
+    }
+
+
 def evaluate_cold(
     model: torch.nn.Module,
     cold_apts: Iterable[str],
-    batch_size: int = 256,
+    batch_size: int = 512,
     stride: int = HORIZON,
+    use_amp: bool = True,
 ) -> dict:
     """Cold-side inference under the v02 protocol; returns PAPE / HR@1 / HR@2 / MAE in kW.
 
@@ -312,6 +400,12 @@ def evaluate_cold(
 
     Returns ``{"pape", "hr@1", "hr@2", "mae", "n_cold_windows", "n_cold_apts"}``.
     """
+    use_amp = use_amp and (DEVICE.type == "cuda")
+    amp_ctx = (
+        torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if use_amp
+        else _NullCtx()
+    )
     model.eval()
     true_chunks, pred_chunks, mean_chunks, std_chunks = [], [], [], []
     n_apts_seen = 0
@@ -331,10 +425,11 @@ def evaluate_cold(
         n_apts_seen += 1
         loader = DataLoader(ds, batch_size=batch_size, shuffle=False)
         for x, y in loader:
-            with torch.no_grad():
-                y_hat, _ = model(x.to(DEVICE))
+            with torch.no_grad(), amp_ctx:
+                y_hat, _ = model(x.to(DEVICE, non_blocking=True))
             true_chunks.append(y.numpy())
-            pred_chunks.append(y_hat.cpu().numpy())
+            # bf16 -> fp32 before .numpy() to keep metrics in fp32 precision.
+            pred_chunks.append(y_hat.float().cpu().numpy())
             mean_chunks.append(np.full(len(y), m_, dtype=np.float32))
             std_chunks.append(np.full(len(y), s_, dtype=np.float32))
     if not true_chunks:

@@ -123,6 +123,7 @@ def train_fedprox(
                 global_model, loader, optimizer,
                 n_epochs=cfg.local_epochs,
                 extra_loss_fn=prox_extra,
+                use_amp=cfg.use_amp,
             )
             local_states.append(clone_state_dict(global_model.state_dict()))
             local_weights.append(float(client.n_train_windows))
@@ -140,7 +141,7 @@ def train_fedprox(
         )
 
     apply_state_dict(global_model, global_state)
-    cold_metrics = evaluate_cold(global_model, cold_apts)
+    cold_metrics = evaluate_cold(global_model, cold_apts, use_amp=cfg.use_amp)
 
     return {
         "algorithm": "fedprox",

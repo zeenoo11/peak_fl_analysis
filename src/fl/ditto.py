@@ -138,7 +138,7 @@ def train_ditto(
                 lr=cfg.lr,
                 weight_decay=cfg.weight_decay,
             )
-            d_g = run_local_epochs(global_model, loader, opt_g, n_epochs=cfg.local_epochs)
+            d_g = run_local_epochs(global_model, loader, opt_g, n_epochs=cfg.local_epochs, use_amp=cfg.use_amp)
             local_globals.append(clone_state_dict(global_model.state_dict()))
             agg_weights.append(float(client.n_train_windows))
             round_main_g_sum += d_g["main_loss_mean"] * d_g["n_batches"]
@@ -155,6 +155,7 @@ def train_ditto(
                 personal_model, loader, opt_p,
                 n_epochs=cfg.local_epochs,
                 extra_loss_fn=pull_extra,
+                use_amp=cfg.use_amp,
             )
             personal_states[client.apt] = clone_state_dict(personal_model.state_dict())
             round_main_p_sum += d_p["main_loss_mean"] * d_p["n_batches"]
@@ -179,12 +180,12 @@ def train_ditto(
     personal_weights = [1.0] * len(personal_list)
     mean_personal = weighted_average(personal_list, personal_weights)
     apply_state_dict(personal_model, mean_personal)
-    cold_metrics_personal = evaluate_cold(personal_model, cold_apts)
+    cold_metrics_personal = evaluate_cold(personal_model, cold_apts, use_amp=cfg.use_amp)
 
     # Also report the global model's cold metrics for reference (it equals what
     # FedAvg would produce; useful as a sanity check that personalisation helps).
     apply_state_dict(global_model, global_state)
-    cold_metrics_global = evaluate_cold(global_model, cold_apts)
+    cold_metrics_global = evaluate_cold(global_model, cold_apts, use_amp=cfg.use_amp)
 
     return {
         "algorithm": "ditto",
