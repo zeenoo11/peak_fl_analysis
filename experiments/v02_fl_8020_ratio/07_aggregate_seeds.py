@@ -118,15 +118,16 @@ def _agg(values: list[float]) -> dict:
 
     (한글) 본 스크립트의 mean ± std는 모두 이 함수를 통과한다.
     핵심 결정사항:
-        - ``ddof=0`` (모집단 std, n으로 나눔). 시드 3개에서는 표본 std (ddof=1) 대비
-          √(2/3) ≈ 0.816 배 작은 값이 나옴. README "± 0.69" 등 보고치 모두 ddof=0 기준.
-        - ``values`` 키에 raw per-seed 값을 그대로 보존 → 외부에서 ddof=1 등 다른
-          정의로 재계산 가능 (paper 작성 시 자유도 표기를 바꿔야 하면 raw에서 다시 계산).
+        - ``ddof=1`` (표본 std, Bessel correction; n-1로 나눔). 시드 3개에서는
+          모집단 std (ddof=0) 대비 √(3/2) ≈ 1.22 배 큰 값. 학계 관행 (v01 §4.4도
+          표본 std로 추정) 및 paper 일관성을 위해 ddof=1 채택.
+        - ``values`` 키에 raw per-seed 값을 그대로 보존 → 외부에서 ddof=0 등 다른
+          정의로 재계산 가능.
     """
     arr = np.asarray(values, dtype=np.float64)
     return {
         "mean": float(arr.mean()),
-        "std": float(arr.std(ddof=0)),  # 모집단 std (n으로 나눔). 표본 std는 ddof=1.
+        "std": float(arr.std(ddof=1)),  # 표본 std (Bessel correction; n-1로 나눔)
         "min": float(arr.min()),
         "max": float(arr.max()),
         "values": [float(v) for v in arr],  # raw values 보존 → 외부 재계산용

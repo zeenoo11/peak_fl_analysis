@@ -30,8 +30,9 @@ cold PAPE while showing a small (+0.6 pp) HR@1 advantage; (iii) the W5
 Hybrid correction continues to dominate either component alone (CMO
 cluster-mean-offset; GST Gaussian sharp template) by **3.24–3.47 PAPE-kW**;
 (iv) the +18.6 pp peak_aux ablation effect from v01 §4.3 is **partially
-preserved but with substantially larger seed variance** (mean +11.9 ± 9.2 pp
-across our three seeds, with one seed exhibiting Vanilla-codebook collapse).
+preserved but with substantially larger seed variance** (mean +11.9 ± 11.2 pp
+across our three seeds — sample std, ddof=1 — with one seed exhibiting
+Vanilla-codebook collapse).
 We therefore present v02 as a **robustness validation under a more standard
 FL ratio**, with one explicit caveat (peak_aux contribution at 80:20 is
 seed-sensitive when the Vanilla codebook fragments).
@@ -229,8 +230,8 @@ computation. PAPE / HR@1 / HR@2 / MAE follow v01 §4.1 definitions.
 
 ## 4. Results
 
-All numbers are mean ± std across seeds {42, 123, 7}; n_cold per seed
-varies 4810 / 4830 / 4820 windows.
+All numbers are **mean ± sample std (ddof = 1) across seeds {42, 123, 7}**;
+n_cold per seed varies 4810 / 4830 / 4820 windows.
 
 ### 4.1 G1 — Headline 80:20 result (Key-Route)
 
@@ -238,9 +239,9 @@ The v01 cold-PAPE improvement is preserved at 80:20:
 
 | Cell | PAPE (kW) | HR@1 (%) | HR@2 (%) | PAPE ratio vs baseline |
 |---|---|---|---|---|
-| baseline (NBEATSxAux, no correction) | 53.95 ± 0.69 | 27.7 ± 1.45 | 38.5 ± 1.07 | 1.000 |
-| Hybrid, HR-preserving | **43.72 ± 0.48** | 26.6 ± 2.28 | 38.1 ± 1.85 | 0.810 (−19.0%) |
-| Hybrid, PAPE-aggressive | **35.70 ± 0.49** | 26.3 ± 2.15 | 37.5 ± 1.74 | 0.662 (−33.8%) |
+| baseline (NBEATSxAux, no correction) | 54.01 ± 1.95 | 27.1 ± 2.26 | 38.6 ± 2.07 | 1.000 |
+| Hybrid, HR-preserving | **43.72 ± 0.59** | 26.6 ± 2.79 | 38.2 ± 2.42 | 0.810 (−19.0%) |
+| Hybrid, PAPE-aggressive | **35.70 ± 0.60** | 26.3 ± 2.63 | 37.8 ± 2.36 | 0.662 (−33.8%) |
 
 The PAPE-aggressive op-point reaches 35.70 ± 0.49 kW, slightly better
 than v01's 50:50 multi-seed value of 37.62 ± 0.45 kW. The HR-preserving
@@ -254,8 +255,8 @@ See **Figure 1** for a side-by-side bar comparison.
 
 | Op-point | Key-Route PAPE | Latent-Route PAPE | ΔPAPE | Key-Route HR@1 | Latent-Route HR@1 | ΔHR@1 |
 |---|---|---|---|---|---|---|
-| HR-preserving | 43.72 ± 0.48 | 43.53 ± 0.66 | −0.19 | 26.6 ± 2.28 | 27.2 ± 2.45 | +0.6 pp |
-| PAPE-aggressive | 35.70 ± 0.49 | 35.69 ± 0.34 | −0.01 | 26.3 ± 2.15 | 26.8 ± 2.14 | +0.5 pp |
+| HR-preserving | 43.72 ± 0.59 | 43.53 ± 0.81 | −0.19 | 26.6 ± 2.79 | 27.2 ± 3.00 | +0.6 pp |
+| PAPE-aggressive | 35.70 ± 0.60 | 35.69 ± 0.42 | −0.01 | 26.3 ± 2.63 | 26.8 ± 2.62 | +0.5 pp |
 
 The PAPE differences are within one σ. The HR@1 advantage of
 Latent-Route (+0.5 / +0.6 pp) is small but consistent across the two
@@ -269,10 +270,10 @@ PAPE-significant improvement. **Figure 2** shows the comparison.
 
 ### 4.3 G3 — Multi-seed stability
 
-PAPE σ across seeds is 0.34–0.66 kW (compare v01 §4.4: σ ≈ 0.45 kW for
-the PAPE-aggressive op-point). HR@1 σ is larger (2.14–2.45 pp) because
-n_cold = 20 is half of v01's 50, but well within the range expected at
-this sample size. The codebook health diagnostics (Section 4.6) and the
+PAPE σ across seeds is 0.42–0.81 kW (sample std, ddof=1; compare v01
+§4.4: σ ≈ 0.45 kW for the PAPE-aggressive op-point). HR@1 σ is larger
+(2.62–3.00 pp) because n_cold = 20 is half of v01's 50, but well within
+the range expected at this sample size. The codebook health diagnostics (Section 4.6) and the
 W-component synergy (Section 4.5) also have small std. Where σ is
 unusually large (E1 contribution, Section 4.4) we flag it and discuss
 the underlying cause.
@@ -286,26 +287,26 @@ with the same protocol.
 
 | Backbone | baseline PAPE | CMO PAPE | rel. improvement | k_min |
 |---|---|---|---|---|
-| Vanilla (peak_aux OFF) | 54.04 ± 1.95 | 47.95 ± 4.61 | varies, see below | 22 ± 12 |
-| NBEATSxAux (peak_aux ON) | 53.95 ± 0.69 | 41.55 ± 0.84 | −23.0% ± 1.6 | 137 ± 28 |
+| Vanilla (peak_aux OFF) | 54.21 ± 2.71 | 47.98 ± 5.46 | varies, see below | 18.0 ± 7.9 |
+| NBEATSxAux (peak_aux ON) | 54.01 ± 1.95 | 41.58 ± 0.76 | −23.0% ± 1.7 | 136.7 ± 34.2 |
 
 The peak_aux contribution measured as the gap between the two relative
-improvements is **+11.9 ± 9.2 pp**, compared to the v01 §4.3 single-seed
-value of +18.6 pp. Per-seed it is +24.7 (seed 42), +7.4 (seed 123), and
+improvements is **+11.9 ± 11.2 pp** (sample std, ddof=1), compared to
+the v01 §4.3 single-seed value of +18.6 pp. Per-seed it is +24.7 (seed 42), +7.4 (seed 123), and
 +3.6 (seed 7). The σ of 9.2 is dominated by Vanilla's behaviour:
 
-- Vanilla's k_min collapses across seeds (24 / 35 / 9), meaning some
-  clusters in the Vanilla codebook receive < 10 windows and produce
-  noisy offsets;
-- correspondingly, Vanilla's CMO PAPE swings (54.24 / 49.39 / 44.23 by
-  seed), occasionally even *under-performing* its own baseline;
-- NBEATSxAux's CMO PAPE is far more stable (42.13 / 40.61 / 41.90;
-  k_min 163 / 98 / 149).
+- Vanilla's k_min collapses across seeds (seed 42: 24, seed 123: 21,
+  seed 7: 9), meaning some clusters in the Vanilla codebook receive
+  < 25 windows and produce noisy offsets;
+- correspondingly, Vanilla's CMO PAPE swings (seed 42: 54.24 — *worse*
+  than its own baseline 51.16; seed 123: 45.48; seed 7: 44.23);
+- NBEATSxAux's CMO PAPE is far more stable (42.13 / 40.71 / 41.90 in
+  the same seed order; k_min 163 / 98 / 149).
 
 In other words, **the +18.6 pp v01 figure is a Vanilla-side instability
 on the smaller cold pool, not a property of NBEATSxAux**. The
 NBEATSxAux-side improvement (NBEATSxAux baseline → NBEATSxAux + CMO,
-−23.0% ± 1.6) is robust; the *attributable contribution of peak_aux*
+−23.0% ± 1.7) is robust; the *attributable contribution of peak_aux*
 inflates whenever Vanilla's codebook happens to fragment. We discuss
 this honestly in §5.2 and recommend reporting both the −23.0% ± 1.6
 NBEATSxAux number (clean) and the +11.9 ± 9.2 pp delta (noisy) in
@@ -325,21 +326,21 @@ Holding the backbone fixed (NBEATSxAux) and the routing fixed
 
 | Op-point | CMO PAPE | GST PAPE | Hybrid PAPE | best-single − Hybrid synergy |
 |---|---|---|---|---|
-| HR-preserving | 47.19 ± 0.71 | 50.07 ± 1.03 | **43.72 ± 0.48** | **+3.47 ± 0.33 kW** |
-| PAPE-aggressive | 44.18 ± 0.14 | 38.93 ± 0.47 | **35.70 ± 0.49** | **+3.24 ± 0.58 kW** |
+| HR-preserving | 47.19 ± 0.87 | 50.07 ± 1.26 | **43.72 ± 0.59** | **+3.47 ± 0.40 kW** |
+| PAPE-aggressive | 44.18 ± 0.18 | 38.93 ± 0.58 | **35.70 ± 0.60** | **+3.24 ± 0.71 kW** |
 
 Hybrid is the best of the three in **every seed × op-point** cell.
-Synergy is positive and tight (σ ≤ 0.58 kW) — the v01 §4.6 iter4
-ranking conclusion (W5 dominates V0 and W1a alone) is robustly
-reproduced at 80:20. **Figure 4**.
+Synergy is positive and tight (σ ≤ 0.71 kW; sample std, ddof=1) — the
+v01 §4.6 iter4 ranking conclusion (W5 dominates V0 and W1a alone) is
+robustly reproduced at 80:20. **Figure 4**.
 
 ### 4.6 Codebook health
 
 Codebook utilisation is 1.000 in every seed (no dead clusters), and
 perplexity is 26.6 / 28.7 / 28.2 (max possible: 32). v01's k_min ≥ 113
 health threshold is met by 2 of 3 seeds (seed 7: 149, seed 42: 163,
-seed 123: 98). The mean is 137 ± 28; **seed 123 falls 15 below the
-threshold**. We flag this honestly: at 80:20 the smallest cluster can
+seed 123: 98). The mean is 137 ± 34 (sample std, ddof=1); **seed 123
+falls 15 below the threshold**. We flag this honestly: at 80:20 the smallest cluster can
 get under-populated even under healthy aggregate utilisation. **Figure
 5** shows per-seed values.
 
@@ -374,7 +375,7 @@ fluctuates because its codebook is unhealthy on small clusters at
    gives a 23 % cold-PAPE reduction with σ < 2 pp, regardless of
    correction-side comparisons.
 2. **Reproducing v01 §4.3.** Report the per-seed (Vanilla CMO − NBEATSxAux
-   CMO) gap as v01 did: +11.9 ± 9.2 pp, with explicit caveat that the
+   CMO) gap as v01 did: +11.9 ± 11.2 pp, with explicit caveat that the
    Vanilla codebook fragmentation drives the variance.
 
 We choose interpretation 2 in the headline, with interpretation 1 in
@@ -401,7 +402,7 @@ because it costs nothing extra.
 ### 5.4 Hybrid dominance is robust
 
 The W-component synergy is positive in 6 of 6 cells (3 seeds × 2
-op-points), with σ ≤ 0.58 kW. The CMO mechanism alone leaves
+op-points), with σ ≤ 0.71 kW (sample std, ddof=1). The CMO mechanism alone leaves
 hour-of-peak imprecise; the GST mechanism alone suffers when the aux
 head's hour prediction is mildly off; the Hybrid recovers from either
 failure mode. This is the cleanest reproduced finding from v01 §4.6
@@ -454,52 +455,52 @@ The seven scripts that produce all numbers in this paper are
 
 | Routing | Op-point | Cell | seed 42 | seed 123 | seed 7 | mean ± std |
 |---|---|---|---|---|---|---|
-| Key-Route | — | baseline PAPE | 51.80 | 55.32 | 54.73 | 53.95 ± 0.69 |
-| Key-Route | HR-preserving | Hybrid PAPE | 43.26 | 44.39 | 43.51 | 43.72 ± 0.48 |
-| Key-Route | PAPE-aggressive | Hybrid PAPE | 36.39 | 35.39 | 35.33 | 35.70 ± 0.49 |
-| Latent-Route | HR-preserving | Hybrid PAPE | 42.95 | 44.46 | 43.19 | 43.53 ± 0.66 |
-| Latent-Route | PAPE-aggressive | Hybrid PAPE | 36.18 | 35.41 | 35.48 | 35.69 ± 0.34 |
-| Key-Route | HR-preserving | Hybrid HR@1 | 27.1 | 23.4 | 29.2 | 26.6 ± 2.28 |
-| Key-Route | PAPE-aggressive | Hybrid HR@1 | 26.7 | 23.4 | 28.8 | 26.3 ± 2.15 |
-| Latent-Route | HR-preserving | Hybrid HR@1 | 27.4 | 24.0 | 30.1 | 27.2 ± 2.45 |
-| Latent-Route | PAPE-aggressive | Hybrid HR@1 | 26.6 | 24.1 | 29.5 | 26.8 ± 2.14 |
+| Key-Route | — | baseline PAPE | 51.80 | 55.49 | 54.73 | 54.01 ± 1.95 |
+| Key-Route | HR-preserving | Hybrid PAPE | 43.26 | 44.39 | 43.51 | 43.72 ± 0.59 |
+| Key-Route | PAPE-aggressive | Hybrid PAPE | 36.39 | 35.39 | 35.33 | 35.70 ± 0.60 |
+| Latent-Route | HR-preserving | Hybrid PAPE | 42.95 | 44.46 | 43.19 | 43.53 ± 0.81 |
+| Latent-Route | PAPE-aggressive | Hybrid PAPE | 36.18 | 35.41 | 35.48 | 35.69 ± 0.42 |
+| Key-Route | HR-preserving | Hybrid HR@1 | 27.1 | 23.4 | 29.2 | 26.6 ± 2.79 |
+| Key-Route | PAPE-aggressive | Hybrid HR@1 | 26.7 | 23.4 | 28.8 | 26.3 ± 2.63 |
+| Latent-Route | HR-preserving | Hybrid HR@1 | 27.4 | 24.0 | 30.1 | 27.2 ± 3.00 |
+| Latent-Route | PAPE-aggressive | Hybrid HR@1 | 26.6 | 24.1 | 29.5 | 26.8 ± 2.62 |
 
-(Per-seed values shown to 2 decimals; aggregator output is the source.)
+(Per-seed values shown to 2 decimals; aggregator output is the source. std is sample std, ddof=1.)
 
 ### B.2 E1 — peak_aux ablation on CMO (Section 4.4)
 
 | Backbone | seed 42 | seed 123 | seed 7 | mean ± std |
 |---|---|---|---|---|
-| Vanilla baseline PAPE | 51.16 | 56.83 | 55.14 | 54.04 ± 1.95 |
-| Vanilla CMO PAPE | 54.24 | 49.39 | 44.23 | 47.95 ± 4.61 |
-| Vanilla relative Δ | +6.0 % | −13.1 % | −19.8 % | (signed mean inflates v01-style pp) |
-| NBEATSxAux baseline PAPE | 51.80 | 55.32 | 54.73 | 53.95 ± 0.69 |
-| NBEATSxAux CMO PAPE | 42.13 | 40.61 | 41.90 | 41.55 ± 0.84 |
-| NBEATSxAux relative Δ | −18.7 % | −26.6 % | −23.4 % | −23.0 % ± 1.6 (clean) |
-| (Vanilla relΔ − NBEATSxAux relΔ) | +24.7 pp | +13.5 pp | +3.6 pp | +11.9 ± 9.2 pp (v01-style; noisy) |
-| Vanilla codebook k_min | 24 | 35 | 9 | 22.7 ± 12 |
-| NBEATSxAux codebook k_min | 163 | 98 | 149 | 137 ± 28 |
+| Vanilla baseline PAPE | 51.16 | 56.34 | 55.14 | 54.21 ± 2.71 |
+| Vanilla CMO PAPE | 54.24 | 45.48 | 44.23 | 47.98 ± 5.46 |
+| Vanilla relative Δ | +6.0 % | −19.3 % | −19.8 % | (signed mean inflates v01-style pp) |
+| NBEATSxAux baseline PAPE | 51.80 | 55.49 | 54.73 | 54.01 ± 1.95 |
+| NBEATSxAux CMO PAPE | 42.13 | 40.71 | 41.90 | 41.58 ± 0.76 |
+| NBEATSxAux relative Δ | −18.7 % | −26.6 % | −23.4 % | −23.0 % ± 1.7 (clean) |
+| (Vanilla relΔ − NBEATSxAux relΔ) | +24.7 pp | +7.4 pp | +3.7 pp | +11.9 ± 11.2 pp (v01-style; noisy) |
+| Vanilla codebook k_min | 24 | 21 | 9 | 18.0 ± 7.9 |
+| NBEATSxAux codebook k_min | 163 | 98 | 149 | 136.7 ± 34.2 |
 
 ### B.3 W-component decomposition (Section 4.5)
 
 | Op-point | Mechanism | seed 42 | seed 123 | seed 7 | mean ± std |
 |---|---|---|---|---|---|
-| HR-preserving | CMO | 46.28 | 48.00 | 47.29 | 47.19 ± 0.71 |
-| HR-preserving | GST | 48.71 | 51.21 | 50.28 | 50.07 ± 1.03 |
-| HR-preserving | Hybrid | 43.26 | 44.39 | 43.51 | 43.72 ± 0.48 |
-| HR-preserving | best-single − Hybrid | +3.02 | +3.61 | +3.78 | +3.47 ± 0.33 |
-| PAPE-aggressive | CMO | 43.99 | 44.21 | 44.34 | 44.18 ± 0.14 |
-| PAPE-aggressive | GST | 39.09 | 39.40 | 38.30 | 38.93 ± 0.47 |
-| PAPE-aggressive | Hybrid | 36.39 | 35.39 | 35.33 | 35.70 ± 0.49 |
-| PAPE-aggressive | best-single − Hybrid | +2.70 | +4.02 | +2.96 | +3.24 ± 0.58 |
+| HR-preserving | CMO | 46.28 | 48.00 | 47.29 | 47.19 ± 0.87 |
+| HR-preserving | GST | 48.71 | 51.21 | 50.28 | 50.07 ± 1.26 |
+| HR-preserving | Hybrid | 43.26 | 44.39 | 43.51 | 43.72 ± 0.59 |
+| HR-preserving | best-single − Hybrid | +3.02 | +3.61 | +3.78 | +3.47 ± 0.40 |
+| PAPE-aggressive | CMO | 43.99 | 44.21 | 44.34 | 44.18 ± 0.18 |
+| PAPE-aggressive | GST | 39.09 | 39.40 | 38.30 | 38.93 ± 0.58 |
+| PAPE-aggressive | Hybrid | 36.39 | 35.39 | 35.33 | 35.70 ± 0.60 |
+| PAPE-aggressive | best-single − Hybrid | +2.70 | +4.02 | +2.96 | +3.24 ± 0.71 |
 
 ### B.4 Codebook health (NBEATSxAux backbone, M=32, Section 4.6)
 
 | Diagnostic | seed 42 | seed 123 | seed 7 | mean ± std |
 |---|---|---|---|---|
 | utilization | 1.000 | 1.000 | 1.000 | 1.000 |
-| perplexity (max 32) | 28.73 | 28.21 | 26.56 | 27.84 ± 0.93 |
-| k_min | **163** | **98** | **149** | 137 ± 28 |
+| perplexity (max 32) | 28.73 | 28.21 | 26.56 | 27.84 ± 1.14 |
+| k_min | **163** | **98** | **149** | 136.7 ± 34.2 |
 | k_max | 1772 | 2476 | 2476 | (varies) |
 
 The bold k_min values mark the v01 §3.3 health threshold of 113;
