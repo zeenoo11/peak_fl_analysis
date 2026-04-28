@@ -216,7 +216,7 @@ def main() -> None:
         },
         "n_train_windows": int(tr["h_g"].shape[0]),
         "n_cold_windows": int(co["y_hat_z"].shape[0]),
-        "n_cold_apts": int(np.unique([0]).size if not cold_apts else len(cold_apts)),
+        "n_cold_apts": int(len(cold_apts)),
         "baseline": base,
         "operating_points": out_per_op,
         "elapsed_seconds": elapsed,

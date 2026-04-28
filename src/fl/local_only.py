@@ -1,14 +1,28 @@
-"""Local-only NBEATSx baseline (no FL) — v04 G1 lower bound.
+"""Local-only NBEATSx baseline (no FL) — v04 G1 reference row.
 
 For each held-out cold apt, train a fresh NBEATSx **on that apt's own
-first-70% segment** with vanilla MAE-loss SGD; evaluate on the same
-apt's eval segment. This is *not* a federated algorithm — it is the
-"no-FL lower bound" referenced in the v04 plan §FL baselines (Tier 1):
+first-70% segment** with vanilla MAE-loss SGD; evaluate on the **same
+segment** (sliding stride=24 windows over the same first-70%). This is
+intentionally a **self-train + self-eval** configuration — for the
+other v04 baselines (FL/NF/FM) the cold apt's first-70% is *unseen*
+data because the apt is held out from training, so evaluating on it
+gives an honest cold-side number; for Local-only the same segment is
+the training data, so the resulting metric is an **overfit upper bound
+on its own data**, not a fair "no-FL lower bound". This caveat is
+disclosed in the v04 paper §6 (Limitations) and the unified paper §6.
 
-    "what cold-PAPE can a cold apt achieve using only its own data?"
+A held-out post-train segment evaluation would give a fair Local-only
+generalisation number, but would not be directly comparable to the
+other v04 cells (which evaluate on the first-70% segment); the
+configuration here was kept aligned with the other cells deliberately.
+The paper text uses Local-only's HR@1 as a sanity point only and not
+as a competing baseline.
 
-A FL or centralised method that beats Local-only justifies the cost
-of FL.
+Reference (loop sketch): the official ``main_local.py`` from
+``rahulv0205/fedrep_experiments`` (cached in
+``papers/literlature/fedrep_official/main_local.py``) — per-client
+self-train with no aggregation. We re-implement directly because the
+official is image-task code; only the training-loop shape is borrowed.
 
 Reference (loop sketch): the official ``main_local.py`` from
 ``rahulv0205/fedrep_experiments`` (cached in
@@ -92,7 +106,10 @@ def _train_one_cold_apt(apt: str, cfg: LocalOnlyConfig) -> tuple[torch.nn.Module
 
 
 def _eval_one_cold_apt(model: torch.nn.Module, apt: str, mean: float, std: float) -> dict:
-    """Inference on this apt's own eval segment (warm-start z-norm = its own train)."""
+    """Inference on this apt's own first-70% segment - the SAME segment used for
+    training (see module docstring: this is intentional self-train + self-eval to
+    keep the evaluation window aligned with the other v04 baselines, but the
+    resulting metric is an overfit upper bound on the apt's own data)."""
     series = load_apartment_hourly(apt).values.astype(np.float32)
     n = len(series)
     train_end = int(n * TRAIN_RATIO)

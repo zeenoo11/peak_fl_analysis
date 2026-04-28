@@ -182,22 +182,22 @@ class _NHITSBlock(nn.Module):
         )
         pooled_input_size = math.ceil(input_size / n_pool_kernel_size)
 
-        # MLP: [pooled_in -> h0] + [h0 -> h1, h1 -> h2, ...] + dropout, ending
-        # with a final Linear(h_last, n_theta).  We mirror the official
-        # ``hidden_layers + output_layer`` pattern exactly.
+        # MLP: hidden_layers + output_layer pattern (matches NeuralForecast official).
+        # Every hidden Linear is followed by activation + optional dropout; the final
+        # Linear -> n_theta is bare. The previous version of this code accidentally
+        # appended activation/dropout AFTER the last hidden Linear instead of BEFORE it
+        # (and missed activation/dropout after the very first Linear), producing two
+        # consecutive activations between the last hidden Linear and the theta head;
+        # that issue was caught in PR #1 review by Copilot and fixed here.
         activ = getattr(nn, activation)()
-        layers: list[nn.Module] = [nn.Linear(pooled_input_size, mlp_hidden[0])]
+        layers: list[nn.Module] = [nn.Linear(pooled_input_size, mlp_hidden[0]), activ]
+        if dropout > 0:
+            layers.append(nn.Dropout(p=dropout))
         for in_dim, out_dim in zip(mlp_hidden[:-1], mlp_hidden[1:]):
             layers.append(nn.Linear(in_dim, out_dim))
             layers.append(activ)
             if dropout > 0:
                 layers.append(nn.Dropout(p=dropout))
-        # The official does activ + dropout after every hidden→hidden Linear
-        # but not after the very first input→h0 Linear — to stay faithful, we
-        # add one trailing activ here on the last hidden output before theta.
-        layers.append(activ)
-        if dropout > 0:
-            layers.append(nn.Dropout(p=dropout))
         layers.append(nn.Linear(mlp_hidden[-1], n_theta))
         self.layers = nn.Sequential(*layers)
         self.basis = basis

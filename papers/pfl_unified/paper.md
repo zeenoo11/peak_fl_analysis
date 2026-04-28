@@ -65,7 +65,7 @@ It is an algorithm paper proposing a new pFL design point and a thorough empiric
 
 The pFL literature can be organised along two axes: *what* is personalised (full model, head only, regulariser pull, prototypes, cluster assignment) and *how often* the personalisation is updated (every round, every k rounds, once). Existing methods cover most cells of this matrix. Parameter-decoupling methods [Collins et al., 2021; Liang et al., 2020] keep the head local and exchange the encoder; regularisation methods [Li et al., 2021; Dinh et al., 2020] interpolate between global and personal models with a tunable strength; meta-learning methods [Fallah et al., 2020] target an initialisation that adapts in a few gradient steps; prototype methods [Tan et al., 2022; Dai et al., 2023] aggregate per-class or per-task summaries server-side; and clustered FL [Ghosh et al., 2020; Sattler et al., 2021] partitions clients into homogeneous groups.
 
-The cell that has received the least attention is *server-side cluster prototypes that are computed once, post-hoc, and consumed by inference-time retrieval rather than by parameter learning*. Federated K-means [Stallmann & Wilbik, 2022] is the closest neighbour in spirit but is iterative and is typically deployed for clustering itself, not for downstream personalisation. The present work adds a peak-aware auxiliary task and a domain-specific correction structure to convert the codebook into a personalisation mechanism for cold-start clients. Importantly, our codebook crosses the donor–server boundary exactly once, and the cold client never makes a gradient step.
+The cell that has received the least attention is *server-side cluster prototypes that are computed once, post-hoc, and consumed by inference-time retrieval rather than by parameter learning*. Federated fuzzy c-means [Stallmann & Wilbik, 2022] is the closest neighbour in spirit but is iterative and is typically deployed for clustering itself, not for downstream personalisation. The present work adds a peak-aware auxiliary task and a domain-specific correction structure to convert the codebook into a personalisation mechanism for cold-start clients. Importantly, our codebook crosses the donor–server boundary exactly once, and the cold client never makes a gradient step.
 
 ### 2.2 Cold-start time-series forecasting
 
@@ -73,7 +73,7 @@ BuildingsBench [Emami et al., 2023] established a strong reference for cold-star
 
 ### 2.3 Vector quantisation in time series
 
-Vector quantisation has been used for tokenising time-series inputs in self-supervised pre-training [VQ-MTM, Yue et al., 2022; TimesFM, Das et al., 2024], for compressing latents inside a forecasting backbone, and for clustering hidden states in classification settings. Our use of vector quantisation differs from each of these: we apply a single post-hoc KMeans++ pass to a *frozen* encoder's hidden representations and use the resulting codebook as a lookup-table-style correction module at inference time. The codebook is never differentiable through and never re-fit during inference; it is a *server-side artefact*, not a learned layer of the model.
+Vector quantisation has been used for tokenising time-series inputs in self-supervised pre-training [VQ-MTM, Gui et al., 2024; TimesFM, Das et al., 2024], for compressing latents inside a forecasting backbone, and for clustering hidden states in classification settings. Our use of vector quantisation differs from each of these: we apply a single post-hoc KMeans++ pass to a *frozen* encoder's hidden representations and use the resulting codebook as a lookup-table-style correction module at inference time. The codebook is never differentiable through and never re-fit during inference; it is a *server-side artefact*, not a learned layer of the model.
 
 ### 2.4 Auxiliary tasks in forecasting
 
@@ -377,11 +377,11 @@ A working bibliography. Final formatting will follow the venue's style.
 - Liang, P. P. et al. *Think Locally, Act Globally: Federated Learning with Local and Global Representations.* arXiv:2001.01523, 2020.
 - McMahan, H. B. et al. *Communication-Efficient Learning of Deep Networks from Decentralized Data.* AISTATS 2017.
 - Olivares, K. G. et al. *Neural Basis Expansion Analysis with Exogenous Variables: Forecasting Electricity Prices with NBEATSx.* International Journal of Forecasting 39(2), 2023.
-- Peng, Y. et al. *Approximate Entropy Analysis of Residential Load.* Energy 2019.
+- Peng, Y. et al. *Short-term Load Forecasting at Different Aggregation Levels with Predictability Analysis.* arXiv:1903.10679, 2019.
 - Sattler, F. et al. *Clustered Federated Learning.* IEEE Transactions on Neural Networks and Learning Systems 2021.
-- Stallmann, M. & Wilbik, A. *Towards Federated Clustering.* arXiv:2210.09519, 2022.
+- Stallmann, M. & Wilbik, A. *Towards Federated Clustering: A Federated Fuzzy c-Means Algorithm (FFCM).* arXiv:2201.07316, 2022.
 - Tan, Y. et al. *FedProto: Federated Prototype Learning across Heterogeneous Clients.* AAAI 2022.
-- Yue, Z. et al. *TS2Vec: Towards Universal Representation of Time Series.* AAAI 2022.
+- Gui, H., Li, X. & Chen, X. *Vector Quantization Pretraining for EEG Time Series with Random Projection and Phase Alignment.* ICML 2024.
 - Zeng, A. et al. *Are Transformers Effective for Time Series Forecasting?* AAAI 2023.
 - Zhang, X. et al. *Seq2Peak: Sequence-to-Peak Auxiliary Forecasting.* CIKM 2023.
 - Zhang, Y. & Yan, J. *Crossformer: Transformer Utilizing Cross-Dimension Dependency for Multivariate Time Series Forecasting.* ICLR 2023.
