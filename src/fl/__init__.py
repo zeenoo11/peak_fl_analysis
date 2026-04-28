@@ -37,6 +37,7 @@ from fl.base import (
 )
 from fl.ditto import DittoConfig, train_ditto
 from fl.fedavg import train_fedavg
+from fl.fedproto import FedProtoConfig, train_fedproto
 from fl.fedprox import FedProxConfig, train_fedprox
 from fl.fedrep import FedRepConfig, train_fedrep
 from fl.local_only import LocalOnlyConfig, train_local_only
@@ -58,8 +59,9 @@ __all__ = [
     "weighted_average",
     # algorithms
     "train_fedavg",
-    "train_fedprox", "FedProxConfig",
-    "train_fedrep",  "FedRepConfig",
-    "train_ditto",   "DittoConfig",
+    "train_fedprox",  "FedProxConfig",
+    "train_fedrep",   "FedRepConfig",
+    "train_ditto",    "DittoConfig",
     "train_local_only", "LocalOnlyConfig",
+    "train_fedproto", "FedProtoConfig",
 ]
