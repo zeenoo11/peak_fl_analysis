@@ -64,6 +64,20 @@ def _load_seed_result(seed: int, method: str) -> dict | None:
         return json.load(fh)
 
 
+def _extract_cold(method: str, r: dict) -> dict | None:
+    """Method-specific cold-metrics extraction.
+
+    Most methods write a top-level ``cold_metrics`` block. The G5
+    cross-cell scripts (peakvq_on_*) instead write a baseline + two
+    op-points; for paper reporting we collapse those to **PAPE-aggressive**
+    (the v04 default headline op-point).
+    """
+    if method.startswith("peakvq_on_"):
+        op = (r.get("operating_points") or {}).get("PAPE-aggressive") or {}
+        return op.get("metrics") if op else None
+    return r.get("cold_metrics")
+
+
 def _aggregate_method(method: str, seeds: list[int]) -> dict:
     """For one method, gather cold metrics across seeds and aggregate."""
     per_seed = {}
@@ -73,7 +87,7 @@ def _aggregate_method(method: str, seeds: list[int]) -> dict:
         r = _load_seed_result(s, method)
         if r is None:
             continue
-        cm = r.get("cold_metrics") or {}
+        cm = _extract_cold(method, r) or {}
         per_seed[str(s)] = {
             "pape": cm.get("pape"),
             "hr@1": cm.get("hr@1"),
