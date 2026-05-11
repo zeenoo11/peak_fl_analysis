@@ -63,9 +63,9 @@ import torch
 from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
-from config import HORIZON, TRAIN_RATIO
+from config import D_MODEL, HORIZON, TRAIN_RATIO
 from dataloader.umass import HouseholdDataset, load_apartment_hourly
-from fl.base import DEVICE, ClientData
+from fl.base import DEVICE, ClientData, _NullCtx
 
 
 # ============================================================================
@@ -135,7 +135,7 @@ def _extract_h_g(
     ds = HouseholdDataset(seg, client.mean, client.std, stride=stride)
     if len(ds) == 0:
         return (
-            np.zeros((0, 64), dtype=np.float32),
+            np.zeros((0, D_MODEL), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
         )
@@ -208,7 +208,7 @@ def local_codebook_step(
         # Empty client (extremely short series) — emit a zero packet so
         # the driver can skip it without a NoneType branch.
         return {
-            "centroids": np.zeros((0, 64), dtype=np.float32),
+            "centroids": np.zeros((0, D_MODEL), dtype=np.float32),
             "counts": np.zeros((0,), dtype=np.int64),
             "h_g": h_g,
             "y_hat_z": y_hat_z,
@@ -451,7 +451,7 @@ def _extract_h_g_from_windows(
     n = int(train_x.shape[0])
     if n == 0:
         return (
-            np.zeros((0, 64), dtype=np.float32),
+            np.zeros((0, D_MODEL), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
         )
@@ -463,7 +463,7 @@ def _extract_h_g_from_windows(
     model.eval()
     h_chunks, yhat_chunks = [], []
     for i in range(0, n, batch_size):
-        xb = torch.from_numpy(train_x[i : i + batch_size]).to(DEVICE, non_blocking=True)
+        xb = torch.from_numpy(train_x[i : i + batch_size]).to(DEVICE)
         with torch.no_grad(), amp_ctx:
             ret = model(xb)
         # NBEATSxAux returns (y_hat, hiddens, aux); MinimalNBEATSx returns
@@ -522,7 +522,7 @@ def local_codebook_step_from_splits(
     )
     if h_g.shape[0] == 0:
         return {
-            "centroids": np.zeros((0, 64), dtype=np.float32),
+            "centroids": np.zeros((0, D_MODEL), dtype=np.float32),
             "counts": np.zeros((0,), dtype=np.int64),
             "h_g": h_g,
             "y_hat_z": y_hat_z,
@@ -542,14 +542,3 @@ def local_codebook_step_from_splits(
     }
 
 
-# ============================================================================
-# Internals
-# ============================================================================
-
-
-class _NullCtx:
-    """Trivial no-op context manager used when AMP is disabled."""
-
-    def __enter__(self): return self
-
-    def __exit__(self, *a): return False

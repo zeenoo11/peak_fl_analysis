@@ -85,7 +85,7 @@ def _forward_apt(
     n = len(x)
     out: list[np.ndarray] = []
     for i in range(0, n, batch_size):
-        xb = torch.from_numpy(x[i : i + batch_size]).to(DEVICE, non_blocking=True)
+        xb = torch.from_numpy(x[i : i + batch_size]).to(DEVICE)
         ret = model(xb)
         # Tuple unpack: support both MinimalNBEATSx (y_hat, hiddens) and
         # NBEATSxAux (y_hat, hiddens, (amp_pred, hr_pred)).
