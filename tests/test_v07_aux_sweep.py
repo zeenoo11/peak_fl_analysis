@@ -15,12 +15,19 @@ Three regression surfaces this pytest pins:
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+_FLAG_DECL = re.compile(r"""['"]--output_namespace['"]""")
+_NS_DEFAULT = re.compile(
+    r"""default\s*=\s*['"]v06_round_dynamics['"]"""
+)
 
 
 def _load_driver(rel: str, module_name: str) -> ModuleType:
@@ -78,42 +85,47 @@ def test_v06_back_compat_default_and_maeonly_unchanged():
 # ---------------------------------------------------------------------------
 
 
-def test_centralised_argparse_namespace_default_back_compat():
-    """Driver argparse defaults to v06 namespace; --output_namespace overrides."""
-    drv = _load_driver(
-        "experiments/v06_round_dynamics/01_centralised.py", "v07_drv_central_arg"
+def _assert_namespace_contract(rel_path: str, *, require_default: bool) -> None:
+    """Quote-insensitive check that the driver declares ``--output_namespace``.
+
+    - Exactly one declaration of the flag string (single or double quoted).
+    - If ``require_default``, a ``default='v06_round_dynamics'`` clause is
+      present (same quote-insensitive scan).
+    - The output path uses ``OUTPUT_DIR / args.output_namespace`` so the
+      flag is actually consumed.
+    """
+    src = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    decls = _FLAG_DECL.findall(src)
+    assert len(decls) == 1, (
+        f"{rel_path}: '--output_namespace' declared {len(decls)} times "
+        f"(expected exactly 1)"
     )
-    # Build the parser by recreating what main() does.
-    import argparse
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--epochs", type=int, default=40)
-    ap.add_argument("--batch_size", type=int, default=512)
-    ap.add_argument("--lr", type=float, default=1e-3)
-    ap.add_argument("--weight_decay", type=float, default=1e-5)
-    ap.add_argument("--aux_lambda", type=float, default=0.3)
-    ap.add_argument("--hr_weight", type=float, default=0.1)
-    ap.add_argument("--no_amp", action="store_true")
-    ap.add_argument("--output_namespace", type=str, default="v06_round_dynamics")
-    args = ap.parse_args([])
-    assert args.output_namespace == "v06_round_dynamics"
-    args = ap.parse_args(["--output_namespace", "v07_loss_budget_sweeps"])
-    assert args.output_namespace == "v07_loss_budget_sweeps"
-    # Driver source must declare the flag exactly once.
-    drv_src = (REPO_ROOT / "experiments/v06_round_dynamics/01_centralised.py").read_text(encoding="utf-8")
-    assert drv_src.count('"--output_namespace"') == 1
+    if require_default:
+        assert _NS_DEFAULT.search(src), (
+            f"{rel_path}: missing default='v06_round_dynamics' near "
+            f"--output_namespace"
+        )
+    assert "OUTPUT_DIR / args.output_namespace" in src, (
+        f"{rel_path}: output path does not consume args.output_namespace"
+    )
+
+
+def test_centralised_argparse_namespace_default_back_compat():
+    _assert_namespace_contract(
+        "experiments/v06_round_dynamics/01_centralised.py", require_default=True
+    )
 
 
 def test_fl_argparse_namespace_default_back_compat():
-    drv_src = (REPO_ROOT / "experiments/v06_round_dynamics/02_fl_dynamics.py").read_text(encoding="utf-8")
-    assert '"--output_namespace"' in drv_src
-    assert 'OUTPUT_DIR / args.output_namespace' in drv_src
+    _assert_namespace_contract(
+        "experiments/v06_round_dynamics/02_fl_dynamics.py", require_default=True
+    )
 
 
 def test_codebook_argparse_namespace_default_back_compat():
-    drv_src = (REPO_ROOT / "experiments/v06_round_dynamics/08_codebook_stacking.py").read_text(encoding="utf-8")
-    assert '"--output_namespace"' in drv_src
-    assert 'OUTPUT_DIR / args.output_namespace' in drv_src
+    _assert_namespace_contract(
+        "experiments/v06_round_dynamics/08_codebook_stacking.py", require_default=True
+    )
 
 
 # ---------------------------------------------------------------------------

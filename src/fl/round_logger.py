@@ -45,12 +45,9 @@ each apt counts once (not weighted by window count) so single-apt
 
 Resumability
 ------------
-Phase 1 driver runs each cell front-to-back. Resume support is partial:
-``_count_existing_rounds`` returns the highest ``round`` seen in the file
-(skipping the ``round=-1`` terminal row), so a re-launch with the same
-output dir will know where it left off. The driver has the responsibility
-to fast-forward the actual model state — this logger only tracks the row
-counter.
+This logger writes one row per round and does not track its own
+resume cursor; the Phase 1 drivers run each cell front-to-back and
+overwrite the output directory on re-launch.
 """
 
 from __future__ import annotations

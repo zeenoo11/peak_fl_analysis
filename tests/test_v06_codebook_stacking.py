@@ -69,9 +69,15 @@ class DummyAux(nn.Module):
         super().__init__()
         self.d_h = d_h
         self.horizon = horizon
-        # Deterministic projection seed so two calls give the same h_g.
-        torch.manual_seed(0)
-        self.proj = nn.Linear(3, d_h, bias=True)
+        # Deterministic projection seed scoped to this constructor only —
+        # save/restore the global RNG state so we don't leak determinism
+        # into other tests in the session.
+        _rng_state = torch.random.get_rng_state()
+        try:
+            torch.manual_seed(0)
+            self.proj = nn.Linear(3, d_h, bias=True)
+        finally:
+            torch.random.set_rng_state(_rng_state)
 
     def forward(self, x: torch.Tensor):
         # x : (B, INPUT_SIZE)

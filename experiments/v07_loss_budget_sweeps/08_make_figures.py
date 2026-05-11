@@ -243,10 +243,13 @@ def make_f_codebook_vs_lambda(fig_dir: Path) -> None:
     xs = np.arange(n)
     width = 0.35
 
-    bef_means = [float(np.mean(table[l]["before"])) for l in labels]
-    bef_stds  = [float(np.std(table[l]["before"], ddof=1)) for l in labels]
-    aft_means = [float(np.mean(table[l]["after"])) for l in labels]
-    aft_stds  = [float(np.std(table[l]["after"], ddof=1)) for l in labels]
+    def _std_ddof1(vals: list[float]) -> float:
+        return float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0
+
+    bef_means = [float(np.mean(table[l]["before"])) if table[l]["before"] else 0.0 for l in labels]
+    bef_stds  = [_std_ddof1(table[l]["before"]) for l in labels]
+    aft_means = [float(np.mean(table[l]["after"]))  if table[l]["after"]  else 0.0 for l in labels]
+    aft_stds  = [_std_ddof1(table[l]["after"])  for l in labels]
 
     bars1 = ax.bar(xs - width/2, bef_means, width, yerr=bef_stds,
                    color="#888888", edgecolor="black", linewidth=0.8,

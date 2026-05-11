@@ -26,8 +26,17 @@ if str(SRC_DIR) not in sys.path:
 import numpy as np
 import pytest
 
-from config import HORIZON, INPUT_SIZE
+from config import HORIZON, INPUT_SIZE, UMASS_DIR
 from dataloader.per_client_split import build_per_client_splits
+
+
+# The UMass Smart* CSVs are license-restricted and gitignored; skip this
+# whole module on machines (and CI) where the dataset is not present so
+# build_per_client_splits' FileNotFoundError doesn't fail the suite.
+pytestmark = pytest.mark.skipif(
+    not (UMASS_DIR / "2016").exists(),
+    reason=f"UMass dataset not found at {UMASS_DIR / '2016'} — install dataset to run per-client split tests",
+)
 
 
 @pytest.fixture(scope="module")
