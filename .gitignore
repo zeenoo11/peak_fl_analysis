@@ -31,6 +31,7 @@ outputs/
 
 # --- Local Claude / MCP config (user-specific paths) ---
 .claude/
+.agents/
 .mcp.json
 
 # --- Cached arxiv / PDFs ---

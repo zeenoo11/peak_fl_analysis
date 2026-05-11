@@ -1,0 +1,346 @@
+# v07-01 — Loss-Weight Sensitivity, Round-Budget Sweep, and Round-Trajectory Codebook
+
+> Successor to `v06-01_round_dynamics.md`. v06 finalised the round-level FL
+> protocol (per-client 70/10/20 split, Phase 1 = 6 cells × 3 seeds, Phase 2 =
+> federated codebook stacking). v06 surfaced two open questions that v06's
+> compute budget could not answer and one trajectory question that requires
+> Phase 1 re-execution; v07 owns those three deliverables.
+>
+> v07 introduces **no new method** — backbone, codebook protocol, evaluation
+> protocol are all carried over from v06 unchanged. v07 is a *sweep paper*
+> that quantifies how three orthogonal hyperparameters (peak-aux loss weight,
+> round/local-epoch budget, codebook-fit timing) affect the v06 conclusions.
+
+> **Status (2026-05-03).** Plan only. v06 paper is drafted in
+> `papers/v06_draft/v06_round_dynamics.md`; v07 implementation begins after
+> v06 finalisation.
+
+---
+
+## §0 Motivation — v06 unanswered questions
+
+### v06 §6 limitation 1 — peak-aux loss weight
+
+v06 reports a *negative* effect of `λ_aux = 0.3` (peak-aux head loss term)
+under round-level FL training: every FL cell's test PAPE worsens by 2.3–3.5
+points relative to its `λ_aux = 0` (MAE-only) ablation. v06 §6 hypothesises
+two possible mechanisms:
+
+1. *Heterogeneous label distribution.* The auxiliary head's 24-class CE on
+   peak hour is sensitive to per-client peak-hour distributions; FedAvg
+   gradient averaging dilutes the signal.
+2. *Loss-weighting mis-tune.* `λ_aux = 0.3` was tuned on v01's centralised
+   training; federation may need a smaller value.
+
+v06 reports the negative result as-is and defers the explanation. v07 §1
+performs a `λ_aux ∈ {0, 0.05, 0.1, 0.2, 0.3}` sweep to localise the optimum
+and discriminate between hypotheses (1) and (2).
+
+### v06 §6 limitation 2 — round / local-epoch budget
+
+v06 fixes `R = 20, E = 2` for all FL cells. The chosen budget is
+McMahan-2017-FedAvg-conventional but not v06-specifically optimal: more
+local epochs accelerate convergence at the cost of larger client drift,
+and FedSGD (E = 1, large R) is the natural reference at the other end of
+the spectrum.
+
+`docs/fl_methodologies_fedsgd_vs_fedavg.md` already lays out the analysis
+plan: an `E ∈ {1, 2, 5, 10, 20}` sweep at fixed total budget T = 80
+epoch-equivalent, plus an FedSGD reference (1 SGD step per round, ~240
+rounds) and a centralised pooled-SGD upper bound. v07 §2 implements this
+sweep on the v06 backbone / split / aggregator.
+
+### v06 Phase 2 follow-up — round-trajectory codebook
+
+v06 Phase 2 reports a single number per cell: the codebook lift evaluated
+on the *final* (round-20) backbone. An open question is whether the
+codebook lift grows monotonically with backbone round count (i.e. a
+better-trained backbone has a richer `h_generic` cluster structure → larger
+codebook lift) or plateaus early. v07 §3 saves intermediate backbones at
+rounds {5, 10, 15, 20} for every Phase-1 cell × seed and re-runs the v06
+Phase-2 codebook stacking on each saved checkpoint.
+
+---
+
+## §1 v07-A — λ_aux sweep
+
+### Goal
+
+Localise the loss-weighting optimum for round-level FL training. Discriminate
+between the heterogeneous-label hypothesis (peak-aux is fundamentally
+incompatible with FL averaging) and the mis-tune hypothesis (a smaller
+non-zero `λ_aux` is the FL-optimal value).
+
+### Cells
+
+| λ_aux | Notes |
+|---|---|
+| 0    | Already in v06 (`*-MAEonly` namespace) — re-use, do not re-run |
+| 0.05 | New                                                            |
+| 0.1  | New                                                            |
+| 0.2  | New                                                            |
+| 0.3  | Already in v06 (default) — re-use, do not re-run               |
+
+### Cells × algorithms × seeds
+
+5 algorithms (FedAvg, FedProx, FedRep, Ditto, FedProto) + 1 centralised =
+**6 cells**. **3 new λ values** × 6 cells × 3 seeds = **54 new runs**.
+Together with the 36 v06 runs (λ=0 + λ=0.3) the full sweep has 90 cells.
+
+### Hyperparameters
+
+All v06 hyperparameters held fixed except `--aux_lambda`:
+`R = 20, E = 2, lr = 1e-3, batch = 512, weight_decay = 1e-5, hr_weight = 0.1`.
+AMP bf16 on CUDA.
+
+### Output namespacing
+
+v06's `_aux_suffix` already returns `-aux{V}` for non-default non-zero
+values, so cell directories will be:
+
+```
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.05/
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.1/
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.2/
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg-aux0.05/
+... (90 cell dirs total)
+```
+
+(v07 sub-directory namespace; v06 outputs at `outputs/v06_round_dynamics/...`
+are not modified.)
+
+### Driver
+
+Re-use `experiments/v06_round_dynamics/{01_centralised, 02_fl_dynamics}.py`
+unchanged — both already accept `--aux_lambda` and emit the correct
+`_aux_suffix` namespace. v07 only adds an outer launcher and a v07-specific
+`OUTPUT_DIR_OVERRIDE` (or symlink) so v06 and v07 outputs do not collide
+in the same `seed{S}/` namespace.
+
+### Expected wall-clock
+
+Per cell wall = same as v06 (~1.6 min FedAvg → ~75 min Ditto). 54 new runs ≈
+**8–14 hours** depending on FL algorithm distribution. Recommend nightly batch.
+
+### Aggregation + figure
+
+`07_aggregate_aux_sweep.py` (new) + `08_make_aux_sweep_figure.py` (new):
+
+- F-aux (a): test PAPE vs `λ_aux` per algorithm — line plot, 6 algorithms,
+  5 λ points, mean ± std.
+- F-aux (b): cross-tabulation table — algorithm × λ_aux → mean test PAPE.
+
+### Discrimination criterion
+
+If the optimum λ for FL cells is *strictly* 0 → hypothesis (1) is supported
+(peak-aux is incompatible with FL averaging). If the optimum is in (0, 0.3]
+→ hypothesis (2) is supported (mis-tune; the FL-optimal value is just smaller
+than the cold-tuned 0.3).
+
+---
+
+## §2 v07-B — round / local-epoch budget sweep
+
+### Goal
+
+Replicate the McMahan 2017 FedAvg Figure 2 setup at the v06 protocol:
+trade off communication rounds vs local-step compute at a fixed total
+epoch-equivalent budget. Establish the FedSGD upper-cost / FedAvg
+intermediate-cost / centralised lower-cost frontier.
+
+### Cells
+
+Two-axis design: `(E, R)` with constant `T = E · R = 80` epoch-equivalents.
+
+| Cell label                  | E (local epochs / round) | R (rounds) | T = E·R |
+|----------------------------|---------------------------|-------------|----------|
+| V7-FedSGD-E1-R80           | 1 SGD step (≈ E=ε)       | 80          | ~80     |
+| V7-FedAvg-E1-R80           | 1                         | 80          | 80      |
+| V7-FedAvg-E2-R40           | 2                         | 40          | 80      |
+| V7-FedAvg-E5-R16           | 5                         | 16          | 80      |
+| V7-FedAvg-E10-R8           | 10                        | 8           | 80      |
+| V7-FedAvg-E20-R4           | 20                        | 4           | 80      |
+| V7-Centralised-T80         | (n/a)                     | (n/a)       | 80 epochs |
+
+7 cells × 3 seeds = **21 runs**.
+
+### Note on FedSGD
+
+`docs/fl_methodologies_fedsgd_vs_fedavg.md` defines FedSGD as 1 SGD step
+per round, not 1 epoch. Implementing FedSGD requires a small extension to
+`src/fl/round_aux.py` to support `--fedsgd_steps` (1 mini-batch per local
+round instead of `n_epochs`). Implementation is not large but the wall-clock
+is the bottleneck: 80 rounds × 114 clients × 1 mini-batch ≈ same total
+compute as FedAvg-E1-R80 but with 80× more communication overhead in
+real-network simulation.
+
+### Output
+
+```
+outputs/v07_loss_budget_sweeps/seed{S}/V7-FedAvg-E5-R16/...
+outputs/v07_loss_budget_sweeps/seed{S}/V7-FedSGD-E1-R80/...
+... (21 cell dirs)
+```
+
+### Aggregation + figure
+
+- F-budget (a): trajectory plot — round vs val PAPE (one curve per `(E, R)`
+  cell), x-axis normalised to *total epoch equivalent* on a shared
+  budget scale.
+- F-budget (b): bytes vs val PAPE Pareto — exposes FedSGD's communication
+  cost vs FedAvg's local-compute cost.
+- F-budget (c): final test PAPE vs `E` at fixed `T = 80`, with centralised
+  upper bound and FedSGD reference annotated.
+
+### Expected wall-clock
+
+Roughly proportional to v06 wall-clock × budget-scaling. FedAvg-E20-R4 ≈ 0.2×
+v06 (4 rounds), FedSGD-E1-R80 ≈ 4× v06 (80 rounds, same total compute).
+Total ≈ 30–60 hours; multi-day batch.
+
+---
+
+## §3 v07-C — round-trajectory codebook
+
+### Goal
+
+Test whether codebook lift grows monotonically with backbone training round.
+If yes → "more rounds → richer h_generic → larger lift". If plateau →
+"codebook lift saturates; backbone improvement is the bottleneck".
+
+### Method
+
+Re-run v06 Phase 1 with checkpointing modification: save `final_state_dict.pt`
+*every 5 rounds* (not just terminal). Then for each saved backbone, run
+v06 Phase 2 (`08_codebook_stacking.py`) and record the lift.
+
+For 6 v06 cells × 3 seeds × 4 round-points {5, 10, 15, 20} = **72 codebook
+runs** (cheap: ~5 s each = ~6 min).
+
+The expensive part is Phase 1 re-execution to capture intermediate
+checkpoints: 6 cells × 3 seeds = 18 runs at v06 wall-times = **6–24 hours**.
+This dominates v07-C's cost.
+
+### Implementation
+
+Single-line modification to `src/fl/round_logger.py` (or to each round-loop
+in `src/fl/round_aux.py`) — add a `checkpoint_every` arg that triggers
+`torch.save(global_state, cell_dir / f'state_round{r}.pt')` at every Nth
+round. Re-use `08_codebook_stacking.py` with a new `--backbone_checkpoint
+state_round{R}.pt` argument that overrides the default `final_state_dict.pt`.
+
+### Output
+
+```
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg/state_round05.pt
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg/state_round10.pt
+...
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg/codebook_lift_round05.json
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg/codebook_lift_round10.json
+...
+```
+
+### Figure
+
+- F-traj: round vs codebook lift (ΔPAPE) — one curve per cell, 4 round-points,
+  mean ± std band.
+
+### Discrimination criterion
+
+If lift is monotonic increasing in round count → backbone training is the
+limiting factor; v07-A (λ tuning) and v07-B (budget) compound with codebook.
+If lift plateaus at round 5–10 → codebook is robust to backbone partial
+training; codebook can be applied early in the FL session for cheaper
+deployment.
+
+---
+
+## §4 Suggested execution order (multi-day plan)
+
+1. **Day 1** — v07-A `λ_aux` sweep launched as nightly batch (~10 hours).
+2. **Day 2 morning** — v07-A aggregate + figure; decide whether v07-B and
+   v07-C proceed in parallel or sequentially based on disk + GPU availability.
+3. **Day 2 afternoon** — v07-C round-trajectory: re-run v06 Phase 1 with
+   `--checkpoint_every 5` (one-line driver mod). 6–24 hours overnight.
+4. **Day 3** — v07-C codebook stacking on saved backbones (~6 min). Aggregate
+   + figure.
+5. **Day 4–5** — v07-B budget sweep (~30–60 hours, the biggest single cost).
+6. **Day 6** — v07 paper draft (`papers/v07_draft/`) consolidating all three
+   axes into a single sweep paper.
+
+Phase ordering is flexible; v07-A and v07-C can run in parallel on the same
+GPU if VRAM permits (each cell uses ≤300 MB), but the nightly batch
+recommendation is to keep them sequential for simpler post-mortem.
+
+---
+
+## §5 Output namespace and reproducibility
+
+### Output root
+
+`outputs/v07_loss_budget_sweeps/seed{S}/{cell}/...`
+
+This directory does **not** overlap with v06's
+`outputs/v06_round_dynamics/seed{S}/{cell}/...`. v06 results stay frozen.
+
+### Drivers
+
+| Driver | Role |
+|---|---|
+| `experiments/v07_loss_budget_sweeps/01_centralised.py`     | re-run v06 01 with v07 OUTPUT path |
+| `experiments/v07_loss_budget_sweeps/02_fl_dynamics.py`     | re-run v06 02 with v07 OUTPUT + budget args |
+| `experiments/v07_loss_budget_sweeps/03_fedsgd.py`          | new — FedSGD per-round single-batch driver |
+| `experiments/v07_loss_budget_sweeps/04_codebook_trajectory.py` | re-run v06 08 with `--backbone_checkpoint` |
+| `experiments/v07_loss_budget_sweeps/05_aggregate_aux.py`   | new — λ_aux sweep aggregator |
+| `experiments/v07_loss_budget_sweeps/06_aggregate_budget.py`| new — budget sweep aggregator |
+| `experiments/v07_loss_budget_sweeps/07_aggregate_traj.py`  | new — trajectory codebook aggregator |
+| `experiments/v07_loss_budget_sweeps/08_make_figures.py`    | F-aux, F-budget, F-traj |
+
+### Tests
+
+New pytests under `tests/` for:
+
+- `test_v07_aux_sweep_naming.py` — verifies `_aux_suffix` produces correct
+  cell names for each `λ_aux ∈ {0.05, 0.1, 0.2, 0.3}`.
+- `test_v07_budget_argparse.py` — verifies `--rounds R --local_epochs E`
+  combinations land in the expected output directory.
+- `test_v07_fedsgd_step.py` — single-batch SGD step contract.
+- `test_v07_checkpoint_roundtrip.py` — `state_round{R}.pt` save/load
+  parity with `final_state_dict.pt`.
+
+### Per-seed argparse
+
+Every driver takes `--seed S` per invocation. Multi-seed sweep is the
+launcher's job (memory: feedback_argparse_per_seed).
+
+---
+
+## §6 Open questions
+
+- (a) Should v07-B include a sweep over `clients_per_round C` (partial
+  participation)? v06 fixes C=1.0 (full participation, 114/114 each round);
+  partial participation is the McMahan FedAvg-paper headline axis.
+- (b) Should v07-C save backbones at *every* round (not just every 5) for
+  finer trajectory granularity? Disk cost = `~0.27 MB × 20 × 18 = ~100 MB`,
+  manageable.
+- (c) Should v07 paper include an *NF baseline* (Crossformer / NHITS / DLinear)
+  as it is in v04? Currently scoped out — v07 is a sweep paper, not a
+  comparison paper.
+- (d) Exact FedSGD definition — McMahan 2017 §1: "1 mini-batch per
+  communication round". Should we use full client batch (size = client's
+  train set) or fixed mini-batch (size 512)? Full batch matches the original
+  paper; fixed mini-batch matches v06's batch=512 invariant. Default to
+  matching v06 (`batch=512`, full client iteration in 1 round).
+
+---
+
+## §7 Cross-version notes
+
+- v07 does **not** modify CLAUDE.md invariants: backbone is frozen at
+  NBEATSxAux + W5 hybrid (v01's design), codebook hyperparameters M=32,
+  K_local=2, stride=24 unchanged.
+- v07 does **not** introduce a new evaluation protocol — uses v06's
+  per-client 70/10/20 split exactly.
+- v07 does **not** re-tune `α_v0` on test (v01 §5.4.1 invariant). The α
+  sensitivity ablation, if needed, lives separately in `papers/v06_draft`
+  follow-up (v06 §5.1) and not in v07.
