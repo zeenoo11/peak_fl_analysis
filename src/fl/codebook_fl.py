@@ -27,7 +27,16 @@ Public surface
 - ``local_codebook_step(model, client, K_local, seed)`` — runs a frozen
   forward over one client's train segment (stride=24, batch=512, bf16
   on CUDA) and fits a local KMeans++. Returns
-  ``{centroids, counts, h_g, y_hat_z, y_true_z, K_local_i}``.
+  ``{centroids, counts, h_g, y_hat_z, y_true_z, K_local_i}``. Reads the
+  raw series from disk (v04/v05 convention).
+
+- ``local_codebook_step_from_splits(model, train_x, train_y, K_local,
+  seed, batch_size, use_amp)`` — v06 variant. Same packet shape as
+  ``local_codebook_step`` but consumes a pre-windowed ``(N, INPUT_SIZE)``
+  / ``(N, HORIZON)`` numpy pair (already stride=24, already z-normed)
+  instead of the disk-reload + ``HouseholdDataset`` path. Used by the
+  v06 Phase 2 codebook-stacking driver where ``per_client_split.pkl``
+  already carved windows.
 
 - ``merge_local_codebooks(local_packets, M_global, seed)`` — Stage 2.
   Stacks all clients' centroids weighted by their local cluster counts
@@ -41,7 +50,8 @@ Public surface
   and the server averages cluster-wise. Returns ``offsets ∈ R^{M × H}``.
 
 The helpers are split so the pure-numpy paths are testable without a
-real backbone — see ``_local_kmeans`` / ``_extract_h_g``.
+real backbone — see ``_local_kmeans`` / ``_extract_h_g`` /
+``_extract_h_g_from_windows``.
 """
 
 from __future__ import annotations
@@ -53,9 +63,9 @@ import torch
 from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader
 
-from config import HORIZON, TRAIN_RATIO
+from config import D_MODEL, HORIZON, TRAIN_RATIO
 from dataloader.umass import HouseholdDataset, load_apartment_hourly
-from fl.base import DEVICE, ClientData
+from fl.base import DEVICE, ClientData, _NullCtx
 
 
 # ============================================================================
@@ -125,7 +135,7 @@ def _extract_h_g(
     ds = HouseholdDataset(seg, client.mean, client.std, stride=stride)
     if len(ds) == 0:
         return (
-            np.zeros((0, 64), dtype=np.float32),
+            np.zeros((0, D_MODEL), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
             np.zeros((0, HORIZON), dtype=np.float32),
         )
@@ -198,7 +208,7 @@ def local_codebook_step(
         # Empty client (extremely short series) — emit a zero packet so
         # the driver can skip it without a NoneType branch.
         return {
-            "centroids": np.zeros((0, 64), dtype=np.float32),
+            "centroids": np.zeros((0, D_MODEL), dtype=np.float32),
             "counts": np.zeros((0,), dtype=np.int64),
             "h_g": h_g,
             "y_hat_z": y_hat_z,
@@ -393,13 +403,142 @@ def federated_residual_offsets(
 
 
 # ============================================================================
-# Internals
+# v06 variant — splits-based extraction (no disk reload, no HouseholdDataset)
 # ============================================================================
 
 
-class _NullCtx:
-    """Trivial no-op context manager used when AMP is disabled."""
+def _extract_h_g_from_windows(
+    model: torch.nn.Module,
+    train_x: np.ndarray,
+    train_y: np.ndarray,
+    *,
+    batch_size: int,
+    use_amp: bool,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Forward pre-windowed (z-normed) tensors through a frozen NBEATSxAux.
 
-    def __enter__(self): return self
+    Counterpart of ``_extract_h_g`` but consumes already-windowed numpy
+    arrays from the v06 ``per_client_split.pkl`` cache instead of
+    re-loading the raw series and rebuilding a ``HouseholdDataset``. This
+    avoids two pitfalls of the original ``_extract_h_g`` for v06:
 
-    def __exit__(self, *a): return False
+    1. ``HouseholdDataset`` requires the raw series + per-apt mean/std and
+       defaults to stride=1; v06 splits already carved windows at
+       stride=24, so a re-build would over-sample.
+    2. The disk reload of the CSV duplicates work the v06 driver already
+       paid via ``build_per_client_splits``.
+
+    Parameters
+    ----------
+    model      : frozen NBEATSxAux (eval mode at the call site).
+    train_x    : (N, INPUT_SIZE) float32 z-normed input windows.
+    train_y    : (N, HORIZON)    float32 z-normed target windows.
+    batch_size : forward-pass batch size.
+    use_amp    : if True and CUDA available, run forward under bf16 autocast.
+
+    Returns
+    -------
+    h_g       : (N, 64) fp32  -- NBEATSxAux's ``h_generic`` latent.
+    y_hat_z   : (N, 24) fp32  -- z-norm forecast.
+    y_true_z  : (N, 24) fp32  -- copy of ``train_y`` (kept symmetric with
+                                ``_extract_h_g``).
+    """
+    if train_x.shape[0] != train_y.shape[0]:
+        raise ValueError(
+            f"_extract_h_g_from_windows: train_x ({train_x.shape}) and "
+            f"train_y ({train_y.shape}) row count mismatch."
+        )
+    n = int(train_x.shape[0])
+    if n == 0:
+        return (
+            np.zeros((0, D_MODEL), dtype=np.float32),
+            np.zeros((0, HORIZON), dtype=np.float32),
+            np.zeros((0, HORIZON), dtype=np.float32),
+        )
+    amp_ctx = (
+        torch.amp.autocast(device_type="cuda", dtype=torch.bfloat16)
+        if (use_amp and DEVICE.type == "cuda")
+        else _NullCtx()
+    )
+    model.eval()
+    h_chunks, yhat_chunks = [], []
+    for i in range(0, n, batch_size):
+        xb = torch.from_numpy(train_x[i : i + batch_size]).to(DEVICE)
+        with torch.no_grad(), amp_ctx:
+            ret = model(xb)
+        # NBEATSxAux returns (y_hat, hiddens, aux); MinimalNBEATSx returns
+        # (y_hat, hiddens). Support both.
+        y_hat = ret[0]
+        hiddens = ret[1]
+        h_chunks.append(hiddens["h_generic"].float().cpu().numpy())
+        yhat_chunks.append(y_hat.float().cpu().numpy())
+    return (
+        np.concatenate(h_chunks, axis=0).astype(np.float32),
+        np.concatenate(yhat_chunks, axis=0).astype(np.float32),
+        train_y.astype(np.float32),
+    )
+
+
+def local_codebook_step_from_splits(
+    model: torch.nn.Module,
+    train_x: np.ndarray,
+    train_y: np.ndarray,
+    K_local: int,
+    seed: int,
+    *,
+    batch_size: int = 512,
+    use_amp: bool = True,
+) -> dict[str, Any]:
+    """Stage 1 (v06 variant) — fit a local KMeans++ from pre-windowed splits.
+
+    Drop-in replacement for ``local_codebook_step`` in v06 contexts where
+    the windows are already in memory (``per_client_split.pkl``) and the
+    backbone state has been frozen for the round-level FL evaluation.
+
+    The packet shape exactly matches ``local_codebook_step``'s output so
+    ``merge_local_codebooks`` and ``federated_residual_offsets`` can be
+    fed without modification — keeping the *federation contract* of v05
+    intact (raw h_g and raw residuals never leave the client; only
+    (centroids, counts) and (residual partial sum, count) tuples
+    upload).
+
+    Parameters
+    ----------
+    model      : frozen NBEATSxAux (eval mode at the call site).
+    train_x    : (N, INPUT_SIZE) float32 z-normed input windows.
+    train_y    : (N, HORIZON)    float32 z-normed target windows.
+    K_local    : target Stage-1 cluster count. Falls back to N if
+                 N < K_local (sklearn raises otherwise).
+    seed       : forwarded to ``KMeans(random_state=seed)``.
+    batch_size : forward-pass batch size (default 512).
+    use_amp    : enable bf16 autocast on CUDA (auto-disabled on CPU).
+
+    Returns
+    -------
+    Same dict shape as ``local_codebook_step``.
+    """
+    h_g, y_hat_z, y_true_z = _extract_h_g_from_windows(
+        model, train_x, train_y, batch_size=batch_size, use_amp=use_amp
+    )
+    if h_g.shape[0] == 0:
+        return {
+            "centroids": np.zeros((0, D_MODEL), dtype=np.float32),
+            "counts": np.zeros((0,), dtype=np.int64),
+            "h_g": h_g,
+            "y_hat_z": y_hat_z,
+            "y_true_z": y_true_z,
+            "K_local_i": 0,
+            "inertia": 0.0,
+        }
+    centroids, counts, inertia, K_local_i = _local_kmeans(h_g, K_local, seed)
+    return {
+        "centroids": centroids,
+        "counts": counts,
+        "h_g": h_g,
+        "y_hat_z": y_hat_z,
+        "y_true_z": y_true_z,
+        "K_local_i": K_local_i,
+        "inertia": inertia,
+    }
+
+
