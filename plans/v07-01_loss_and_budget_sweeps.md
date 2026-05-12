@@ -139,6 +139,67 @@ than the cold-tuned 0.3).
 
 ---
 
+## §1.5 v07-A2 — hr_weight sweep at λ_aux=0.1
+
+### Goal
+
+Ask whether the FL-incompatibility of `peak_aux` is concentrated in the
+*peak-hour CE term* (which is inherently more sensitive to per-client label
+distribution skew than MSE) or lies in `peak_aux` as a whole. The v06
+default `hr_weight=0.1` was carried over from v01's centralised cold-tune;
+v07-A2 varies this parameter at the v07-A centralised optimum `λ_aux=0.1`.
+
+### Cells
+
+`hr_weight ∈ {0.05, 0.1, 0.5, 1.0}` × 6 algorithms (centralised + 5 FL) ×
+3 seeds. The default `hr=0.1` cell overlaps with v07-A's `aux0.1` results
+(reuse, do not re-run); only `hr ∈ {0.05, 0.5, 1.0}` × 6 × 3 = **54 new
+runs**. Total sweep: 72 cells (54 new + 18 overlap).
+
+### Hyperparameters
+
+All v06 hyperparameters held fixed except `--hr_weight`, with `--aux_lambda`
+fixed at `0.1`:
+`R = 20, E = 40, lr = 1e-3, batch = 512, weight_decay = 1e-5, λ_aux = 0.1`.
+
+Cell suffix: `-aux0.1-hr{V}` (e.g. `V6-Dyn-B-FedAvg-aux0.1-hr0.5`).
+
+### Driver
+
+`experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` (exists).
+
+### Discrimination criterion
+
+- If raising `hr_weight` (scaling peak-hour CE up) *worsens* FL cells →
+  incompatibility is concentrated in peak-hour CE term (heterogeneous-label
+  hypothesis, CE variant).
+- If raising `hr_weight` does *not* worsen FL cells (or slightly improves)
+  → incompatibility lies in `peak_aux` as a whole / peak-amp MSE term;
+  simple label-distribution hypothesis is ruled out.
+
+### Expected outcome (paper §5)
+
+All 5 FL cells are **monotone decreasing** in `hr_weight`: `hr=1.0` beats
+`hr=0.1` default by −0.23 to −0.70 PAPE (small but consistent). Centralised
+is robust (total range ~1.0 PAPE, optimum at default `hr=0.1`). This rules
+out the simplest heterogeneous-CE hypothesis; the FL-incompatibility of
+`peak_aux` is carried at least as much by the peak-amplitude MSE term.
+
+### Output namespacing
+
+```
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.1-hr0.05/
+outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-B-FedAvg-aux0.1-hr0.5/
+... (54 new cell dirs)
+```
+
+### Aggregation + figure
+
+Handled by `05_aggregate_aux.py` (shared with v07-A). Figure: **F-hr** —
+`hr_weight` (log-x) vs test PAPE per algorithm, mean ± std band.
+
+---
+
 ## §2 v07-B — round / local-epoch budget sweep
 
 ### Goal
@@ -290,14 +351,14 @@ This directory does **not** overlap with v06's
 
 | Driver | Role |
 |---|---|
-| `experiments/v07_loss_budget_sweeps/01_centralised.py`     | re-run v06 01 with v07 OUTPUT path |
-| `experiments/v07_loss_budget_sweeps/02_fl_dynamics.py`     | re-run v06 02 with v07 OUTPUT + budget args |
-| `experiments/v07_loss_budget_sweeps/03_fedsgd.py`          | new — FedSGD per-round single-batch driver |
-| `experiments/v07_loss_budget_sweeps/04_codebook_trajectory.py` | re-run v06 08 with `--backbone_checkpoint` |
-| `experiments/v07_loss_budget_sweeps/05_aggregate_aux.py`   | new — λ_aux sweep aggregator |
-| `experiments/v07_loss_budget_sweeps/06_aggregate_budget.py`| new — budget sweep aggregator |
-| `experiments/v07_loss_budget_sweeps/07_aggregate_traj.py`  | new — trajectory codebook aggregator |
-| `experiments/v07_loss_budget_sweeps/08_make_figures.py`    | F-aux, F-budget, F-traj |
+| `experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py`       | v07-A λ_aux sweep (centralised + 5 FL × 3 new λ values) |
+| `experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` | v07-A hr_weight sweep (fixed λ=0.1, hr ∈ {0.05,0.1,0.5,1.0}) |
+| `experiments/v07_loss_budget_sweeps/05_aggregate_aux.py`       | λ_aux + hr_weight sweep aggregator → aux_sweep_summary.json |
+| `experiments/v07_loss_budget_sweeps/08_make_figures.py`        | F-aux figures |
+| `experiments/v07_loss_budget_sweeps/03_fedsgd.py`              | **(deferred — v07-B)** FedSGD per-round single-batch driver |
+| `experiments/v07_loss_budget_sweeps/04_codebook_trajectory.py` | **(deferred — v07-C)** re-run v06 08 with `--backbone_checkpoint` |
+| `experiments/v07_loss_budget_sweeps/06_aggregate_budget.py`    | **(deferred — v07-B)** budget sweep aggregator |
+| `experiments/v07_loss_budget_sweeps/07_aggregate_traj.py`      | **(deferred — v07-C)** trajectory codebook aggregator |
 
 ### Tests
 
