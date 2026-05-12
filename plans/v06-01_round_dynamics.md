@@ -27,7 +27,7 @@ User 지시 (2026-05-01) 에 따라 v06 을 두 phase 로 나눈다:
 - **Phase 2 — codebook terminal-stacking + 옵션 reference (Phase 1 끝나면
   scope 확정).** Phase 1 의 5 FL cell × 3 seed = 15 final state_dict 위
   에 v05 hierarchical federated codebook (`src/fl/codebook_fl.py`,
-  K_local=4, M=32, α=1.0) 을 한 번씩 fit + cluster-mean correction →
+  K_local=2, M=32, α=1.0) 을 한 번씩 fit + cluster-mean correction →
   각 cell 의 `result.json` 에 `with_codebook_cmo` 블록 추가 (= **Option
   α terminal-stacking**). conference Proposed 는 자연스럽게 V6-Dyn-B-
   FedAvg 의 `with_codebook_cmo` 행으로 reproduce 되며, 다른 4 cell
@@ -108,7 +108,7 @@ PAPE/HR/MAE + cumulative comm bytes + drift L2 기록. **Conference 표 (line
 
 **G3.** **Proposed (FedAvg + post-hoc federated codebook + correction)
 의 trajectory.** Conference Proposed 와 동일한 recipe: FedAvg-NBEATSxAux 학습
-+ 학습 종료 후 v05 hierarchical federated codebook (K_local=4, M=32) fit +
++ 학습 종료 후 v05 hierarchical federated codebook (K_local=2, M=32) fit +
 cluster-mean correction (α=1.0). 라운드별 trajectory 는 *backbone 부분만*
 (codebook 은 post-hoc 1-shot 이므로 라운드별 update 없음 — CLAUDE.md "post-hoc
 1-shot" 불변), terminal 에서 codebook fit + corrected metric 한 번 보고. 이
@@ -238,7 +238,7 @@ FM zero-shot / FedSGD limit 코드 모두 *작성하지 않음*.
 
 | Add-on | 처리 방식 | 비고 |
 |---|---|---|
-| Codebook terminal-stacking | Phase 1 5 FL cell × 3 seed = 15 final state_dict 각각에 v05 hierarchical federated codebook (K_local=4, M=32, α=1.0) 한 번 fit + cluster-mean correction → `with_codebook_cmo` block 을 해당 cell 의 `result.json` 에 추가. **별도 cell 정의하지 않음**. | Option α — 본 plan §"Phase 분리". V6-Dyn-B-FedAvg + codebook = conference Proposed. |
+| Codebook terminal-stacking | Phase 1 5 FL cell × 3 seed = 15 final state_dict 각각에 v05 hierarchical federated codebook (K_local=2, M=32, α=1.0) 한 번 fit + cluster-mean correction → `with_codebook_cmo` block 을 해당 cell 의 `result.json` 에 추가. **별도 cell 정의하지 않음**. | Option α — 본 plan §"Phase 분리". V6-Dyn-B-FedAvg + codebook = conference Proposed. |
 | V6-Dyn-D-NF (옵션) | NHITS / Crossformer / DLinear, 100가구 pooled centralised, terminal only. | conference NF reference. |
 | V6-Dyn-E-FM (옵션) | Chronos-T5 tiny / TimesFM / Chronos-Bolt small, zero-shot. | conference FM reference. trajectory 없음. |
 | V6-Dyn-F-FedSGD (옵션) | FedSGD, 1 step / round, R≈40. | docs 두 representative methodology 중 한 쪽 limit reference. |
@@ -336,7 +336,7 @@ V6-Dyn-C-Proposed 의 `result.json` 에는 추가로 `with_codebook_cmo`
 
 ```json
 "with_codebook_cmo": {
-  "K_local": 4, "M": 32, "alpha": 1.0,
+  "K_local": 2, "M": 32, "alpha": 1.0,
   "val":  {"pape_mean": ..., ...},
   "test": {"pape_mean": ..., ...}
 }
