@@ -3,7 +3,7 @@
 (한글 요약)
 v06 (`plans/v06-01_round_dynamics.md` §"클라이언트 모집단") 전용 dataloader.
 v01-v05 의 cold-split 구조 (train apts vs cold apts) 를 *사용하지 않는다* —
-모든 100 가구가 federated 학습에 참여하고, 각 가구 내부에서 시간 순으로
+모든 114 가구가 federated 학습에 참여하고, 각 가구 내부에서 시간 순으로
 train(70%) / val(10%) / test(20%) 윈도우를 자른다.
 
 Public surface
@@ -23,7 +23,7 @@ Public surface
 
 Determinism
 -----------
-``filter_valid_apartments(min_hours=7000)`` returns the 100-apt UMass 2016
+``filter_valid_apartments(min_hours=7000)`` returns the 114-apt UMass 2016
 pool deterministically (sorted Apt names). Within an apt, slicing is purely
 positional → bit-equivalent across runs for a fixed seed. The ``seed``
 argument currently only affects the cache file path (no random shuffle),
@@ -95,7 +95,7 @@ def build_per_client_splits(
         with cache_path.open("rb") as fh:
             return pickle.load(fh)
 
-    # 100 apt pool, deterministic & sorted (list_available_apartments + filter
+    # 114 apt pool, deterministic & sorted (list_available_apartments + filter
     # are themselves deterministic — no seed needed).
     all_apts = list_available_apartments(year=year)
     apts = filter_valid_apartments(all_apts, year=year, min_hours=7000)
