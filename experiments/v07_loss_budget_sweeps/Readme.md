@@ -68,7 +68,7 @@ foreach ($lam in 0.05, 0.1, 0.2) {
        --seed 42 --epochs 40 --aux_lambda $lam --output_namespace v07_loss_budget_sweeps
   foreach ($algo in "fedavg", "fedprox", "fedrep", "ditto", "fedproto") {
     & $PY "$ROOT/experiments/v06_round_dynamics/02_fl_dynamics.py" `
-         --algorithm $algo --seed 42 --local_epochs 2 --aux_lambda $lam `
+         --algorithm $algo --seed 42 --local_epochs 40 --aux_lambda $lam `
          --output_namespace v07_loss_budget_sweeps
   }
 }
@@ -81,7 +81,7 @@ foreach ($lam in 0.05, 0.1, 0.2) {
        --seed 123 --epochs 40 --aux_lambda $lam --output_namespace v07_loss_budget_sweeps
   foreach ($algo in "fedavg", "fedprox", "fedrep", "ditto", "fedproto") {
     & $PY "$ROOT/experiments/v06_round_dynamics/02_fl_dynamics.py" `
-         --algorithm $algo --seed 123 --local_epochs 2 --aux_lambda $lam `
+         --algorithm $algo --seed 123 --local_epochs 40 --aux_lambda $lam `
          --output_namespace v07_loss_budget_sweeps
   }
 }
@@ -94,7 +94,7 @@ foreach ($lam in 0.05, 0.1, 0.2) {
        --seed 7 --epochs 40 --aux_lambda $lam --output_namespace v07_loss_budget_sweeps
   foreach ($algo in "fedavg", "fedprox", "fedrep", "ditto", "fedproto") {
     & $PY "$ROOT/experiments/v06_round_dynamics/02_fl_dynamics.py" `
-         --algorithm $algo --seed 7 --local_epochs 2 --aux_lambda $lam `
+         --algorithm $algo --seed 7 --local_epochs 40 --aux_lambda $lam `
          --output_namespace v07_loss_budget_sweeps
   }
 }

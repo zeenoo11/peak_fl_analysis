@@ -11,7 +11,7 @@ Backbone / loss / hyperparameter (전 5종 cell 공통, plan §2)
 - NBEATSxAux(latent_source='h_generic') — 모든 5종이 동일한 backbone.
 - L = MAE(ŷ, y) + 0.3 · peak_aux(ŷ, y; hr_weight=0.1) — combined loss.
 - AdamW (Adam) lr=1e-3, weight_decay=1e-5.
-- batch=512, rounds=20, local_epochs=2, full participation (C=1.0).
+- batch=512, rounds=20, local_epochs=40, full participation (C=1.0).
 - Algorithm-specific extras: FedProx mu=0.01, FedRep head_epochs=1,
   Ditto lam=0.1, FedProto K=32 lambda_proto=0.1.
 
@@ -107,7 +107,7 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=RANDOM_SEED)
     ap.add_argument("--algorithm", required=True, choices=list(_ALGO_PRETTY.keys()))
     ap.add_argument("--rounds", type=int, default=20)
-    ap.add_argument("--local_epochs", type=int, default=2)
+    ap.add_argument("--local_epochs", type=int, default=40)
     ap.add_argument("--batch_size", type=int, default=512)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--weight_decay", type=float, default=1e-5)
