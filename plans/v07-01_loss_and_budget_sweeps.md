@@ -38,17 +38,17 @@ and discriminate between hypotheses (1) and (2).
 
 ### v06 §6 limitation 2 — round / local-epoch budget
 
-v06 fixes `R = 20, E = 2` for all FL cells. The chosen budget is
-McMahan-2017-FedAvg-conventional but not v06-specifically optimal: more
-local epochs accelerate convergence at the cost of larger client drift,
-and FedSGD (E = 1, large R) is the natural reference at the other end of
-the spectrum.
+v06 fixes `R = 20, E = 40` for all FL cells (actual execution; plan
+originally specified E=2 — see audit S1). T = 800 epoch-equiv per client.
+The chosen budget is not v06-specifically optimal: more local epochs
+accelerate convergence at the cost of larger client drift, and FedSGD
+(E = 1, large R) is the natural reference at the other end of the spectrum.
 
 `docs/fl_methodologies_fedsgd_vs_fedavg.md` already lays out the analysis
-plan: an `E ∈ {1, 2, 5, 10, 20}` sweep at fixed total budget T = 80
-epoch-equivalent, plus an FedSGD reference (1 SGD step per round, ~240
-rounds) and a centralised pooled-SGD upper bound. v07 §2 implements this
-sweep on the v06 backbone / split / aggregator.
+plan: an `E ∈ {1, 2, 5, 10, 20}` sweep at fixed total budget T = 800
+epoch-equivalent (matching v06 actual T=800), plus an FedSGD reference
+(1 SGD step per round, ~800 rounds) and a centralised pooled-SGD upper
+bound. v07 §2 implements this sweep on the v06 backbone / split / aggregator.
 
 ### v06 Phase 2 follow-up — round-trajectory codebook
 
@@ -90,7 +90,7 @@ Together with the 36 v06 runs (λ=0 + λ=0.3) the full sweep has 90 cells.
 ### Hyperparameters
 
 All v06 hyperparameters held fixed except `--aux_lambda`:
-`R = 20, E = 2, lr = 1e-3, batch = 512, weight_decay = 1e-5, hr_weight = 0.1`.
+`R = 20, E = 40, lr = 1e-3, batch = 512, weight_decay = 1e-5, hr_weight = 0.1`.
 AMP bf16 on CUDA.
 
 ### Output namespacing
@@ -150,19 +150,22 @@ intermediate-cost / centralised lower-cost frontier.
 
 ### Cells
 
-Two-axis design: `(E, R)` with constant `T = E · R = 80` epoch-equivalents.
+Two-axis design: `(E, R)` with constant `T = E · R = 800` epoch-equivalents
+(matching v06 actual: E=40 × R=20 = 800; plan originally used T=80 based
+on the mis-specified E=2 — see audit S1).
 
 | Cell label                  | E (local epochs / round) | R (rounds) | T = E·R |
 |----------------------------|---------------------------|-------------|----------|
-| V7-FedSGD-E1-R80           | 1 SGD step (≈ E=ε)       | 80          | ~80     |
-| V7-FedAvg-E1-R80           | 1                         | 80          | 80      |
-| V7-FedAvg-E2-R40           | 2                         | 40          | 80      |
-| V7-FedAvg-E5-R16           | 5                         | 16          | 80      |
-| V7-FedAvg-E10-R8           | 10                        | 8           | 80      |
-| V7-FedAvg-E20-R4           | 20                        | 4           | 80      |
-| V7-Centralised-T80         | (n/a)                     | (n/a)       | 80 epochs |
+| V7-FedSGD-E1-R800          | 1 SGD step (≈ E=ε)       | 800         | ~800    |
+| V7-FedAvg-E1-R800          | 1                         | 800         | 800     |
+| V7-FedAvg-E2-R400          | 2                         | 400         | 800     |
+| V7-FedAvg-E5-R160          | 5                         | 160         | 800     |
+| V7-FedAvg-E10-R80          | 10                        | 80          | 800     |
+| V7-FedAvg-E20-R40          | 20                        | 40          | 800     |
+| V7-FedAvg-E40-R20          | 40 (= v06 default)        | 20          | 800     |
+| V7-Centralised-T800        | (n/a)                     | (n/a)       | 800 epochs |
 
-7 cells × 3 seeds = **21 runs**.
+8 cells × 3 seeds = **24 runs**.
 
 ### Note on FedSGD
 
@@ -170,16 +173,16 @@ Two-axis design: `(E, R)` with constant `T = E · R = 80` epoch-equivalents.
 per round, not 1 epoch. Implementing FedSGD requires a small extension to
 `src/fl/round_aux.py` to support `--fedsgd_steps` (1 mini-batch per local
 round instead of `n_epochs`). Implementation is not large but the wall-clock
-is the bottleneck: 80 rounds × 114 clients × 1 mini-batch ≈ same total
-compute as FedAvg-E1-R80 but with 80× more communication overhead in
+is the bottleneck: 800 rounds × 114 clients × 1 mini-batch ≈ same total
+compute as FedAvg-E1-R800 but with 800× more communication overhead in
 real-network simulation.
 
 ### Output
 
 ```
-outputs/v07_loss_budget_sweeps/seed{S}/V7-FedAvg-E5-R16/...
-outputs/v07_loss_budget_sweeps/seed{S}/V7-FedSGD-E1-R80/...
-... (21 cell dirs)
+outputs/v07_loss_budget_sweeps/seed{S}/V7-FedAvg-E5-R160/...
+outputs/v07_loss_budget_sweeps/seed{S}/V7-FedSGD-E1-R800/...
+... (24 cell dirs)
 ```
 
 ### Aggregation + figure
@@ -189,13 +192,13 @@ outputs/v07_loss_budget_sweeps/seed{S}/V7-FedSGD-E1-R80/...
   budget scale.
 - F-budget (b): bytes vs val PAPE Pareto — exposes FedSGD's communication
   cost vs FedAvg's local-compute cost.
-- F-budget (c): final test PAPE vs `E` at fixed `T = 80`, with centralised
+- F-budget (c): final test PAPE vs `E` at fixed `T = 800`, with centralised
   upper bound and FedSGD reference annotated.
 
 ### Expected wall-clock
 
-Roughly proportional to v06 wall-clock × budget-scaling. FedAvg-E20-R4 ≈ 0.2×
-v06 (4 rounds), FedSGD-E1-R80 ≈ 4× v06 (80 rounds, same total compute).
+Roughly proportional to v06 wall-clock × budget-scaling. FedAvg-E20-R40 ≈ 2×
+v06 (40 rounds), FedSGD-E1-R800 ≈ 40× v06 (800 rounds, same total compute).
 Total ≈ 30–60 hours; multi-day batch.
 
 ---
