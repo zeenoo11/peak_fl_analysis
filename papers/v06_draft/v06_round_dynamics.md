@@ -160,14 +160,14 @@ PAPE / HR@1 / HR@2 / MAE / MSE(kW²) are computed and aggregated as across-apt m
 
 ### §4.1 Default cell (λ_aux = 0.3)
 
-| Cell | val.PAPE | **test.PAPE** | HR@1 (test) | drift L2 | Upload (MB) | wall (s) |
+| Cell | val.PAPE | **test.PAPE** | HR@1 (test) | drift L2 | Upload (MiB) | wall (s) |
 |---|---|---|---|---|---|---|
 | V6-Dyn-A centralised | 66.33 ± 0.80 | **49.43 ± 0.36** | 20.81 ± 0.03 | 0 | 0 | 35 |
-| FedAvg            | 81.62 ± 3.00 | 51.36 ± 0.61 | 13.46 ± 0.16 | 2.42 | 641  | 725 |
-| FedProx (μ=0.01)  | 81.73 ± 2.35 | 51.40 ± 0.63 | 13.78 ± 0.18 | **1.71** | 641 | 2384 |
-| FedRep (head_ep=1)| 78.24 ± 1.79 | 51.36 ± 0.68 | 13.78 ± 0.62 | 2.20 | **527** | 897  |
-| Ditto (λ=0.1)     | 84.49 ± 2.42 | 51.79 ± 0.47 | 13.84 ± 0.35 | 2.42 | 641  | 4410 |
-| FedProto (K=32)   | 80.93 ± 2.95 | 51.50 ± 0.54 | 13.46 ± 0.34 | 2.43 | 660  | 1574 |
+| FedAvg            | 81.62 ± 3.00 | 51.36 ± 0.61 | 13.46 ± 0.16 | 2.42 | 611  | 725 |
+| FedProx (μ=0.01)  | 81.73 ± 2.35 | 51.40 ± 0.63 | 13.78 ± 0.18 | **1.71** | 611 | 2384 |
+| FedRep (head_ep=1)| 78.24 ± 1.79 | 51.36 ± 0.68 | 13.78 ± 0.62 | 2.20 | **502** | 897  |
+| Ditto (λ=0.1)     | 84.49 ± 2.42 | 51.79 ± 0.47 | 13.84 ± 0.35 | 2.42 | 611  | 4410 |
+| FedProto (K=32)   | 80.93 ± 2.95 | 51.50 ± 0.54 | 13.46 ± 0.34 | 2.43 | 629  | 1574 |
 
 **Centralised vs FL.** Centralised SGD attains test PAPE = 49.43 %; the best FL test PAPE is
 51.36 % (FedAvg). The +2 PAPE deficit holds across all five FL algorithms with std ~0.6
@@ -179,8 +179,8 @@ within their ~0.6 PAPE std bands. Algorithm choice is *not* a discriminator at 2
 PAPE improvement, consistent with the FedProx 2020 finding that drift control ≠ accuracy gain
 on convex-ish workloads.
 
-**Cost efficiency.** FedRep uploads 527 MB total (head not broadcast), an 18 % saving versus
-FedAvg's 641 MB at equivalent test PAPE — the Pareto-dominant FL choice. FedProto pays for
+**Cost efficiency.** FedRep uploads 502 MiB total (head not broadcast), an 18 % saving versus
+FedAvg's 611 MiB at equivalent test PAPE — the Pareto-dominant FL choice. FedProto pays for
 prototype broadcast (+8 KB / round) but the resulting accuracy difference is statistically
 zero.
 
@@ -222,10 +222,16 @@ no benefit from rounds 13–20 except a small late descent for FedRep. The traje
 support §4.1's algorithm-equivalence finding visually.
 
 `F2_bytes_vs_val_pape.png` confirms FedRep's Pareto dominance — its trajectory sits
-left-of-and-below FedAvg's at every round.
+left-of-and-below FedAvg's at every round. (F2 x-axis is binary MiB = bytes / 1024².)
 
 `F3_drift_vs_round.png` shows FedProx flat at ~1.7 from round 5 onwards while the other
 four FL algorithms drift up to 2.4–2.6, the cleanest visual signature of FedProx's effect.
+
+**Note on FedRep drift_l2.** FedRep's drift_l2 (2.20) is computed against the per-client
+round-start mean (`mean_head_pre`, `src/fl/round_aux.py:541-548`) rather than the global
+round-start state used by the other four algorithms; the values are therefore not directly
+comparable across algorithms in F3. The qualitative point — that drift control alone does not
+translate to PAPE improvement — is unaffected.
 
 ## §5 Phase 2 — Post-hoc codebook stacking
 
@@ -285,12 +291,14 @@ and obtained:
 
 | Cell | test.PAPE BEFORE | test.PAPE AFTER | ΔPAPE | (vs default ΔPAPE) |
 |---|---|---|---|---|
-| centralised-MAEonly | 48.90 ± 0.68 | **44.41 ± 0.29** | **−4.49 ± 0.56** | (default −4.51) |
-| FedAvg-MAEonly      | 48.43 ± 0.38 | 44.59 ± 0.34 | −3.84 ± 0.06 | (default −5.44) |
-| FedProx-MAEonly     | 48.50 ± 0.02 | 44.84 ± 0.17 | −3.66 ± 0.17 | (default −5.42) |
-| FedRep-MAEonly      | 49.07 ± 0.50 | 45.49 ± 0.68 | −3.58 ± 0.90 | (default −5.60) |
-| **Ditto-MAEonly**   | 48.29 ± 0.32 | **44.20 ± 0.27** | −4.09 ± 0.08 | (default −5.88) |
-| FedProto-MAEonly    | 48.47 ± 0.30 | 44.54 ± 0.26 | −3.93 ± 0.12 | (default −5.61) |
+| centralised-MAEonly | 48.91 ± 0.70 | **44.41 ± 0.29** | **−4.49 ± 0.56** | (default −4.51) |
+| FedAvg-MAEonly      | 48.42 ± 0.37 | 44.59 ± 0.34 | −3.84 ± 0.06 | (default −5.44) |
+| FedProx-MAEonly     | 48.51 ± 0.03 | 44.84 ± 0.17 | −3.66 ± 0.17 | (default −5.42) |
+| FedRep-MAEonly      | 49.08 ± 0.50 | 45.49 ± 0.68 | −3.58 ± 0.90 | (default −5.60) |
+| **Ditto-MAEonly**   | 48.28 ± 0.32 | **44.20 ± 0.27** | −4.09 ± 0.08 | (default −5.88) |
+| FedProto-MAEonly    | 48.49 ± 0.31 | 44.54 ± 0.26 | −3.93 ± 0.12 | (default −5.61) |
+
+*BEFORE values in §4.2 and §5.3 are computed from the same `result.json` `test_terminal.pape_mean` across seeds {42, 123, 7}.*
 
 **Lift survives but shrinks.** Every MAE-only cell still gains 3.6–4.5 PAPE
 points from codebook stacking — the codebook is *not* a free rider on the
