@@ -99,7 +99,7 @@ Outputs are namespaced under `outputs/conference/{pipeline,ablation}/seed{S}/` r
 
 ## v06 — round-level FL training dynamics (planned)
 
-v01–v05 all evaluate on a **cold-client zero-shot** held-out partition — that is a *cold personalisation* protocol, not a federated-learning protocol per se. v06 abandons the cold partition entirely and measures **federated learning itself**: every valid UMass apartment (N=100, after `filter_valid_apartments(min_hours=7000)`) participates in training; each apartment is evaluated on its own internal val/test windows; metrics are logged at every FL communication round.
+v01–v05 all evaluate on a **cold-client zero-shot** held-out partition — that is a *cold personalisation* protocol, not a federated-learning protocol per se. v06 abandons the cold partition entirely and measures **federated learning itself**: every valid UMass apartment (N=114, after `filter_valid_apartments(min_hours=7000)`) participates in training; each apartment is evaluated on its own internal val/test windows; metrics are logged at every FL communication round.
 
 Per-apartment internal split: `TRAIN_RATIO=0.7`, `VAL_RATIO=0.1`, test = remaining 0.2 (CLAUDE.md `src/config.py` constants). v06 does **not** read `outputs/v02_fl_8020_ratio/splits/` or `Peak_Analysis/configs/v10_households.yaml` — those are cold-protocol artefacts.
 
