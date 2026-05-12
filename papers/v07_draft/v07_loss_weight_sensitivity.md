@@ -388,19 +388,19 @@ default `(λ=0.3, hr=0.1)` cells have empty suffixes for back-compat.
 To regenerate the entire v07 paper from scratch with v06 results already
 on disk:
 
-```bash
-uv run python experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py \
-    --seeds 42 123 7 --lambdas 0.05 0.1 0.2 \
+```powershell
+uv run python experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py `
+    --seeds 42 123 7 --lambdas 0.05 0.1 0.2 `
     --algorithms fedavg fedprox fedrep ditto fedproto
 
 # v07-A1 codebook stacking on centralised λ=0.1 (3 seeds)
-for SEED in 42 123 7; do
-  uv run python experiments/v06_round_dynamics/08_codebook_stacking.py \
-      --seed $SEED --cell V6-Dyn-A_centralised-aux0.1 \
+foreach ($SEED in 42, 123, 7) {
+  uv run python experiments/v06_round_dynamics/08_codebook_stacking.py `
+      --seed $SEED --cell V6-Dyn-A_centralised-aux0.1 `
       --output_namespace v07_loss_budget_sweeps
-done
+}
 
-uv run python experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py \
+uv run python experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py `
     --seeds 42 123 7 --hr_weights 0.05 0.5 1.0
 
 uv run python experiments/v07_loss_budget_sweeps/05_aggregate_aux.py --seeds 42 123 7
