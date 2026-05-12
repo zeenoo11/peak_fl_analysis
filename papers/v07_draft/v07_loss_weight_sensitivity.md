@@ -52,7 +52,7 @@ All v07 cells share the v06 protocol unchanged:
   K_local=2 (federated), stride=24, AMP bf16 on CUDA.
 - **Loss**: `L = MAE(ŷ, y) + λ_aux · (peak_amp_MSE + hr_weight · peak_hour_CE)`.
 - **Optimiser**: AdamW (Adam) lr=1e-3, weight_decay=1e-5, batch=512.
-- **Round budget**: rounds=20, local_epochs=2, full participation (C=1.0).
+- **Round budget**: rounds=20, local_epochs=40, full participation (C=1.0).
   v07 does **not** sweep this axis (deferred to v07-B in
   `plans/v07-01_loss_and_budget_sweeps.md`).
 - **Algorithms**: centralised pooled SGD (upper bound), FedAvg, FedProx
@@ -112,8 +112,8 @@ mechanism (2), mis-tune, is supported on this cell.
 All five FL algorithms return their best test PAPE at the *boundary*
 `λ = 0`. The trajectories rise strictly with `λ_aux` for FedAvg, FedProx,
 FedRep, Ditto, and FedProto. The cost of going from `λ=0` to v06's default
-`λ=0.3` is +1.5 PAPE (FedAvg, FedProx, FedRep, FedProto) to +3.5 PAPE
-(Ditto) on the test split, with std ≤ 1.1 across seeds — every difference
+`λ=0.3` is +2.28 PAPE (FedRep, minimum) to +3.51 PAPE (Ditto, maximum)
+on the test split, with std ≤ 1.1 across seeds — every difference
 exceeds 2σ.
 
 This is the **incompatibility hypothesis (1)** confirmed: peak-aux is not
@@ -248,7 +248,7 @@ consistent with the broader reading:
 
 The ordering of effect sizes (PAPE on FL cells):
 
-- 1st-order: `λ_aux = 0` vs `λ_aux = 0.3` → −1.5 to −3.5 PAPE  *(huge — v07-A finding 2)*
+- 1st-order: `λ_aux = 0` vs `λ_aux = 0.3` → −2.28 to −3.51 PAPE  *(huge — v07-A finding 2)*
 - 2nd-order: `hr=1.0` vs `hr=0.1` at `λ=0.1` → −0.2 to −0.7 PAPE  *(small — v07-A2 finding 4)*
 
 The v06 default's primary problem is `λ_aux > 0` itself; redistributing the
@@ -285,13 +285,14 @@ on FL cells (−0.5 to −1.5 PAPE depending on algorithm). v07-A1 (§4)
 extends this finding to centralised, where the gap is smaller (44.41 vs
 44.92 = −0.51 PAPE) but identical in direction. The v07-A2 finding (§5)
 strengthens the recipe: even *within* `λ_aux > 0`, hr_weight retuning
-gives at best −0.7 PAPE on FedAvg, which is dominated by the −1.5 to
-−3.5 PAPE gain from setting `λ_aux = 0` outright.
+gives at best −0.7 PAPE on FedAvg, which is dominated by the −2.28 to
+−3.51 PAPE gain from setting `λ_aux = 0` outright.
 
 ### §6.3 Limitations and deferred questions
 
-1. **Round / local-epoch budget** — `(R=20, E=2)` was held fixed across
-   all v07 cells. The budget axis is what `plans/v07-01` §2 (v07-B) is
+1. **Round / local-epoch budget** — `(R=20, E=40)` was held fixed across
+   all v07 cells (see item 6 below for the audit note on the originally
+   stated E=2). The budget axis is what `plans/v07-01` §2 (v07-B) is
    scoped to, including a FedSGD reference and an `E ∈ {1, 2, 5, 10, 20}`
    sweep at `T = E·R = 80`. v07-B is a *new-driver* axis — `03_fedsgd.py`
    needs to be written to support 1-mini-batch-per-round FedSGD — and is
@@ -314,10 +315,26 @@ gives at best −0.7 PAPE on FedAvg, which is dominated by the −1.5 to
    choice (α_v0) is *not* re-tuned on test (the bit-exact carry-over
    invariant of CLAUDE.md). v07 inherits α_v0 = 1.0 from v06 §5.1.
 
+6. **Round budget mismatch (audit C1)** — `plans/v06-01_round_dynamics.md`
+   and this paper's §2 originally stated `local_epochs = 2`, matching the
+   conference Phase A invariant and giving a nominal budget of
+   `R × E = 20 × 2 = 40` epoch-equivalents per client. The actual runs (all
+   `result.json` files and the v07 launcher at
+   `experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py:108`) used
+   `local_epochs = 40`, i.e. `R × E = 20 × 40 = 800` epoch-equivalents
+   per client — 20× higher compute than the stated protocol. The §2 table
+   above now reflects the true value. The qualitative claims of this paper
+   (centralised interior optimum at λ=0.1; FL strict boundary optimum at
+   λ=0; FL-incompatibility of peak-aux) are not affected by this discrepancy,
+   but absolute PAPE numbers and all λ-cost claims in this draft should be
+   read as pertaining to the **800 epoch-equivalent regime**, not the
+   originally intended 40 epoch-equivalent regime.
+
 Items (1) and (2) are scoped explicitly in
 `plans/v07-01_loss_and_budget_sweeps.md` and will form a follow-up draft;
 item (3) is a deliberate scope decision; items (4) and (5) are
-out-of-scope by the protocol invariants.
+out-of-scope by the protocol invariants; item (6) is a retrospective
+documentation correction.
 
 ## §7 Conclusion
 
@@ -345,7 +362,7 @@ centralised backbones (§4). The five takeaways:
    centralised is robust to hr_weight (range 1.0 PAPE only). The damage
    is borne by the peak-aux gradient as a whole under FedAvg averaging.
 5. Effect sizes order as: `λ_aux = 0` vs `λ_aux = 0.3` (1st order, huge,
-   −1.5 to −3.5 PAPE on FL) ≫ `hr_weight = 1.0` vs default at fixed
+   −2.28 to −3.51 PAPE on FL) ≫ `hr_weight = 1.0` vs default at fixed
    `λ_aux = 0.1` (2nd order, small, −0.7 PAPE). The recommended recipe
    is `λ_aux = 0` + codebook stacking; further within-peak-aux tuning
    yields only marginal additional gains.
