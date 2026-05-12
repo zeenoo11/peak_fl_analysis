@@ -74,7 +74,7 @@ hyperparameters:
 | Hyperparameter | Value |
 |---|---|
 | Rounds         | 20 |
-| Local epochs   | 2  |
+| Local epochs   | 40 |
 | Optimiser      | Adam (lr=1e-3, weight_decay=1e-5) |
 | Batch          | 512 |
 | Participation  | full (C=1.0; 114 of 114 clients) |
@@ -85,7 +85,7 @@ Algorithm-specific extras (paper-default values, no per-cell tuning):
 | Algorithm | Extra |
 |---|---|
 | FedProx  | μ = 0.01 (proximal weight) |
-| FedRep   | head_epochs = 1 (1 head + 1 encoder out of 2 local epochs) |
+| FedRep   | head_epochs = 1 (1 head + 39 encoder out of 40 local epochs) |
 | Ditto    | λ = 0.1 (personal-pull weight) |
 | FedProto | K = 32, λ_proto = 0.1 |
 
@@ -175,7 +175,7 @@ indicating a real gap, not noise.
 
 **Algorithm equivalence.** The five FL test PAPEs span 51.36 to 51.79 (range 0.43 PAPE)
 within their ~0.6 PAPE std bands. Algorithm choice is *not* a discriminator at 20 rounds with
-2 local epochs. FedProx halves client drift (1.71 vs ~2.42) but does *not* convert that into
+40 local epochs. FedProx halves client drift (1.71 vs ~2.42) but does *not* convert that into
 PAPE improvement, consistent with the FedProx 2020 finding that drift control ≠ accuracy gain
 on convex-ish workloads.
 
@@ -447,7 +447,7 @@ penalty.
 Across both Phase 1 (BEFORE codebook) and Phase 2 (AFTER codebook), the five FL algorithms
 sit within 0.5 PAPE of each other. None of FedProx's drift control, FedRep's
 encoder/head separation, Ditto's personal model, or FedProto's prototype regulariser produces
-a discriminating PAPE advantage at this scale (114 apartments, 20 rounds, 2 local epochs).
+a discriminating PAPE advantage at this scale (114 apartments, 20 rounds, 40 local epochs).
 The recommended choice is **FedRep** (lowest comm cost) for FL training and **federated
 codebook stacking** (Phase 2) for an additional ~5 PAPE.
 
@@ -455,22 +455,30 @@ codebook stacking** (Phase 2) for an additional ~5 PAPE.
 
 1. **Single dataset.** All v06 numbers come from UMass 2016. Generalisation to UK-DALE,
    Pecan Street, or larger client populations is open. Deferred to future work.
-2. **20 rounds with 2 local epochs.** Larger E or larger R may surface algorithm
+2. **20 rounds with 40 local epochs.** Larger E or larger R may surface algorithm
    differences that are invisible at this scale. v07 (`plans/v07-01_loss_and_budget_sweeps.md`)
    sweeps `(E, R)` at fixed total budget T=80 to localise these effects; v06 paper does not
    pre-empt that sweep.
-3. **Loss-weighting sweep deferred.** The peak-aux negative result of §4.2 was hypothesised
+3. **Compute budget mismatch.** v06's originally stated invariant was ~40 epoch-equivalent
+   budget per FL client (R=20 × E=2). The actual runs used R=20 × E=40 = 800
+   epoch-equivalents per client, while the centralised cell trained for 40 epochs. The
+   "conference Phase A bit-equivalent" claim is therefore weaker than originally stated: FL
+   cells received 20× more local compute than centralised. The qualitative comparisons
+   (round-vs-PAPE shape, algorithm equivalence, drift trajectory) still hold because they are
+   relative across FL algorithms, but absolute compute equivalence between the centralised
+   upper bound and the FL cells does not.
+4. **Loss-weighting sweep deferred.** The peak-aux negative result of §4.2 was hypothesised
    to be either (i) heterogeneous label dilution under FedAvg or (ii) a `λ_aux` mis-tune
    carried over from v01's centralised setting. Discriminating between these is v07-A's job
    (`λ_aux ∈ {0, 0.05, 0.1, 0.2, 0.3}` × 6 cells × 3 seeds). v06 reports the negative result
    as-is; §5.3 establishes that the negative result *survives* Phase-2 codebook stacking
    (MAE-only + codebook strictly beats default + codebook), so the operating recipe for v06
    is `λ_aux = 0` + codebook regardless of v07's sweep outcome.
-4. **Centralised codebook reference.** V6-Dyn-A_centralised is an "upper bound" reference but
+5. **Centralised codebook reference.** V6-Dyn-A_centralised is an "upper bound" reference but
    is itself a centralised protocol — a federated codebook on a federated backbone (FedCB on
    FedAvg-Aux) is the closest privacy-preserving pipeline, validated above as
    numerically equivalent (§5.2).
-5. **Round-trajectory codebook.** Whether codebook lift grows monotonically with backbone
+6. **Round-trajectory codebook.** Whether codebook lift grows monotonically with backbone
    round count or plateaus early is open; this requires Phase-1 re-execution with intermediate
    checkpointing. Deferred to v07-C.
 
