@@ -158,10 +158,17 @@ F-codebook-vs-λ:
 
 Figure: `figures/F-codebook-vs-lambda.png`.
 
+> **Note on dual JSON sources**: §3.2 numbers are read from `result.json`
+> `test_terminal.pape_mean`; §4.2 BEFORE numbers are read from
+> `codebook_lift.json` `test_before.pape_mean`. Both compute test PAPE
+> through slightly different aggregation paths, yielding sub-rounding
+> discrepancies (e.g., centralised λ=0: 48.91 vs 48.90; centralised
+> λ=0.1: 48.47 vs 48.46). The qualitative claims are unaffected.
+
 ### §4.3 Finding 3 — codebook absorbs the backbone λ choice
 
-After codebook stacking, all three centralised backbones land within 0.5
-PAPE of each other (44.41 / 44.53 / 44.92). The pre-codebook ordering —
+After codebook stacking, all three centralised backbones land within 0.55
+PAPE of each other (44.41, 44.53, 44.92 — range 0.51). The pre-codebook ordering —
 `λ=0.1 < λ=0 < λ=0.3` — is **not** preserved post-codebook: the strict
 post-codebook optimum is `λ=0` (44.41), with the smallest ΔMAE cost
 (+0.0043 vs +0.0077 / +0.0095 on the other two cells). The v06 §5.3
@@ -193,9 +200,9 @@ or whether it lies in `peak_aux` as a whole.
 Sweep: `hr_weight ∈ {0.05, 0.1, 0.5, 1.0}` × 6 algorithms × 3 seeds, all
 at `λ_aux = 0.1` (centralised v07-A optimum). 54 new runs — the
 default `hr=0.1` cell reuses v07-A's `aux0.1` results, so only
-`hr ∈ {0.05, 0.5, 1.0}` × 6 × 3 = 54 actually executed. Wall-clock ≈ 5h
+`hr ∈ {0.05, 0.5, 1}` × 6 × 3 = 54 actually executed. Wall-clock ≈ 5h
 under 3-way parallelism. Cell suffix: `-aux0.1-hr{V}` (e.g.
-`V6-Dyn-B-FedAvg-aux0.1-hr0.5`).
+`V6-Dyn-B-FedAvg-aux0.1-hr0.5`; hr=1.0 → suffix `-hr1`).
 
 ### §5.2 Results
 
@@ -352,7 +359,7 @@ centralised backbones (§4). The five takeaways:
    mono­tonically across `λ ∈ {0.05, 0.1, 0.2, 0.3}`. The FL-incompatibility
    of peak-aux is therefore not a tuning artefact.
 3. After post-hoc federated codebook stacking, the centralised backbone
-   PAPE is absorbed onto a 0.5-PAPE band centred at 44.5; the strict
+   PAPE is absorbed onto a 0.55-PAPE band (range 0.51) centred at 44.5; the strict
    post-codebook optimum is the **MAE-only** backbone (44.41 PAPE), with
    the smallest MAE side-effect (ΔMAE = +0.0043). v06 §5.3's "MAEonly +
    codebook" recommendation generalises to centralised.
@@ -376,7 +383,7 @@ centralised backbones (§4). The five takeaways:
 | v07-A figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section aux` | `outputs/.../figures/F-aux.png` | <1 s |
 | v07-A1 codebook (3 runs centralised λ=0.1) | `experiments/v06_round_dynamics/08_codebook_stacking.py --cell V6-Dyn-A_centralised-aux0.1 --output_namespace v07_loss_budget_sweeps` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.1/codebook_lift.json` | ≈15 s total |
 | v07-A1 figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section codebook_lambda` | `outputs/.../figures/F-codebook-vs-lambda.png` | <1 s |
-| v07-A2 Phase 1 (54 runs, hr ∈ {0.05, 0.5, 1.0}, λ=0.1) | `experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-{...}-aux0.1-hr{V}/result.json` | ~5h, 3-way per-seed parallel |
+| v07-A2 Phase 1 (54 runs, hr ∈ {0.05, 0.5, 1}, λ=0.1) | `experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-{...}-aux0.1-hr{V}/result.json` | ~5h, 3-way per-seed parallel |
 | v07-A2 figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section hr` | `outputs/.../figures/F-hr.png` | <1 s |
 | Tests | `pytest tests/test_v07_aux_sweep.py` | 10 unit-tests pass | <3 s |
 
