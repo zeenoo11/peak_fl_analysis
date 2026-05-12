@@ -276,7 +276,7 @@ FM zero-shot / FedSGD limit 코드 모두 *작성하지 않음*.
 | **6** | `experiments/v06_round_dynamics/01_centralised.py` | V6-Dyn-A 드라이버. argparse: `--seed S --epochs 40 --batch 512`. | smoke `--seed 42 --epochs 2`. |
 | **7** | `experiments/v06_round_dynamics/02_fl_dynamics.py` | V6-Dyn-B-{FedAvg, FedProx, FedRep, Ditto, FedProto} 통합 드라이버. argparse: `--seed S --algorithm {fedavg,fedprox,fedrep,ditto,fedproto} --rounds 20 --local_epochs 40 --batch 512`. **codebook 호출 없음** — Phase 1 은 backbone trajectory 만. | smoke `--seed 42 --algorithm fedavg --rounds 2`. |
 | **8** | `experiments/v06_round_dynamics/06_aggregate.py` | Phase 1 모든 `round_log.jsonl` + terminal 행 → `multiseed_summary.json` (terminal numbers; conference Table 과 같은 schema 의 PAPE / HR@1 / HR@2 / MSE) + `trajectories.npz` (라운드별 array). | one shot. |
-| **9** | `experiments/v06_round_dynamics/07_make_figures.py` | 3 figure: F1_round_vs_val_pape (5종 FL + V6-Dyn-A 직선 reference), F2_bytes_vs_val_pape, F3_drift_vs_round (5종 FL 만; V6-Dyn-A drift=0). 3-seed mean ± std band. | one shot. |
+| **9** | `experiments/v06_round_dynamics/07_make_figures.py` (Phase 1), `experiments/v06_round_dynamics/08_codebook_stacking.py` (Phase 2) | Phase 1: 7 figures — F1_round_vs_val_pape, F1b_round_vs_test_pape, F1c_round_vs_train_loss, F2_bytes_vs_val_pape, F3_drift_vs_round, F4_round_vs_test_pape_MAEonly, F5_round_vs_train_loss_MAEonly (5종 FL + V6-Dyn-A reference; 3-seed mean ± std band). Phase 2 (codebook stacking): F6_codebook_lift, F7_alpha_pareto, F8_klocal_sweep. 총 10 figures. | one shot each. |
 | **10** | 3-seed sweep | Phase 1 = 18 runs. | summary + figures. |
 | **11** | `papers/v06_draft/v06_round_dynamics.md` (new) | conference Table 과 v06 trajectory 양쪽이 어떻게 같은 ranking 으로 수렴하는지 보이는 short paper. (Phase 1 분량으로 일단 작성, Phase 2 결과는 추후 추가.) | reviewer pass. |
 | **(Phase 2)** | `experiments/v06_round_dynamics/08_codebook_stacking.py` (Phase 2) | Phase 1 의 5 FL cell × 3 seed 의 `final_state_dict.pt` 각각을 v05 federated codebook 으로 한 번 fit + correction → 해당 `result.json` 에 `with_codebook_cmo` block append. | Phase 1 통과 후 dispatch. |
@@ -300,10 +300,18 @@ outputs/v06_round_dynamics/
 │   # - V6-Dyn-D-NF/, V6-Dyn-E-FM/, V6-Dyn-F-FedSGD/ (옵션)
 ├── trajectories.npz
 ├── multiseed_summary.json
-└── figures/
-    ├── F1_round_vs_val_pape.png
-    ├── F2_bytes_vs_val_pape.png
-    └── F3_drift_vs_round.png
+└── figures/                          ← 런타임 산출물 (gitignored)
+    ├── F1_round_vs_val_pape.png      # Phase 1
+    ├── F1b_round_vs_test_pape.png    # Phase 1
+    ├── F1c_round_vs_train_loss.png   # Phase 1
+    ├── F2_bytes_vs_val_pape.png      # Phase 1
+    ├── F3_drift_vs_round.png         # Phase 1
+    ├── F4_round_vs_test_pape_MAEonly.png   # Phase 1
+    ├── F5_round_vs_train_loss_MAEonly.png  # Phase 1
+    ├── F6_codebook_lift.png          # Phase 2
+    ├── F7_alpha_pareto.png           # Phase 2
+    └── F8_klocal_sweep.png           # Phase 2
+# 총 10 figures; 커밋 사본은 papers/v06_draft/figures/ 에 보관
 ```
 
 `round_log.jsonl` schema 는 §3. `result.json` (terminal-only, conference
