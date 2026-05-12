@@ -1,7 +1,7 @@
 """V6 Phase 2 — codebook terminal-stacking add-on (per-seed × per-cell driver).
 
 (한글 요약)
-v06 Phase 1 (round-level FL training dynamics) 가 12종 cell × 3 seeds = 36
+v06 Phase 1 (round-level FL training dynamics) 가 30종 cell × 3 seeds = 90
 backbone artefact 를 이미 ``outputs/v06_round_dynamics/seed{S}/{cell}/final_state_dict.pt``
 로 남겼다. 이 스크립트는 그 backbone 들을 **freeze 한 채** v01-v05 의 Peak-VQ
 codebook 을 *post-hoc stacking* 해서 per-client TEST split (20%) 에 대한
@@ -20,8 +20,8 @@ Correction = CMO-only (Cluster-Mean Offset, Gaussian template α_w1 dropped):
 Output (per seed × per cell):
     ``outputs/v06_round_dynamics/seed{S}/{cell}/codebook_lift.json``
 
-Per-seed argparse — multi-seed × multi-cell sweep 은 사용자 launcher 가 12 cells
-× 3 seeds = 36 회 호출 (memory: feedback_argparse_per_seed). 이 스크립트는 한
+Per-seed argparse — multi-seed × multi-cell sweep 은 사용자 launcher 가 30 cells
+× 3 seeds = 90 회 호출 (memory: feedback_argparse_per_seed). 이 스크립트는 한
 번에 single ``--seed S`` × single ``--cell C`` 만 처리한다.
 
 CLAUDE.md 준수:
@@ -283,13 +283,13 @@ def main() -> None:
         description=(
             "v06 Phase 2 — post-hoc Peak-VQ codebook stacking on a v06 Phase 1 "
             "backbone. CMO-only correction (no Gaussian template). Single seed × "
-            "single cell per invocation; outer launcher loops over 12 cells × {42,123,7}."
+            "single cell per invocation; outer launcher loops over 30 cells × {42,123,7}."
         )
     )
     ap.add_argument("--seed", type=int, default=RANDOM_SEED,
                     help="Single seed (memory: feedback_argparse_per_seed).")
     ap.add_argument("--cell", type=str, required=True, choices=_VALID_CELLS,
-                    help="One of the 12 v06 Phase-1 cells (the backbone source).")
+                    help="One of the 30 v06 Phase-1 cells (the backbone source).")
     ap.add_argument("--M", type=int, default=32,
                     help="Codebook size (CLAUDE.md fixed = 32).")
     ap.add_argument("--K_local", type=int, default=2,
