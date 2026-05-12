@@ -184,8 +184,7 @@ def main() -> None:
     # 5) Terminal val + test (using a fresh model with the final state).
     fresh = init_backbone_aux(seed=args.seed)
     fresh.load_state_dict(result["final_state_dict"], strict=True)
-    val_terminal_row  = logger.log_terminal(model=fresh, wall_total=elapsed, split="val")
-    test_terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed, split="test")
+    terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed)
     logger.close()
 
     # 6) Aggregate drift_l2_mean_over_rounds from the jsonl rows.
@@ -224,16 +223,16 @@ def main() -> None:
         "C": 1.0,
         "algo_kwargs": algo_kwargs,
         "history": result["history"],
-        "val_terminal":  val_terminal_row["val"],
-        "test_terminal": test_terminal_row["val"],
+        "val_terminal":  terminal_row["val"],
+        "test_terminal": terminal_row["test"],
         "comm_total_bytes": {"upload_cum": upload_cum, "broadcast_cum": broadcast_cum},
         "drift_l2_mean_over_rounds": drift_mean,
         "elapsed_seconds": float(elapsed),
     }
     with (out_dir / "result.json").open("w") as fh:
         json.dump(result_json, fh, indent=2)
-    print(f"[{cell_name}] done.  val.PAPE={val_terminal_row['val']['pape_mean']:.2f}  "
-          f"test.PAPE={test_terminal_row['val']['pape_mean']:.2f}  "
+    print(f"[{cell_name}] done.  val.PAPE={terminal_row['val']['pape_mean']:.2f}  "
+          f"test.PAPE={terminal_row['test']['pape_mean']:.2f}  "
           f"drift_mean={drift_mean:.3f}  elapsed={elapsed:.0f}s")
 
 

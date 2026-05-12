@@ -151,8 +151,7 @@ def main() -> None:
     # 6) Terminal val + test rows.
     fresh = init_backbone_aux(seed=args.seed)
     fresh.load_state_dict(result["final_state_dict"], strict=True)
-    val_terminal_row  = logger.log_terminal(model=fresh, wall_total=elapsed, split="val")
-    test_terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed, split="test")
+    terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed)
     logger.close()
 
     # 7) result.json (conference-compatible schema).
@@ -162,6 +161,7 @@ def main() -> None:
         "seed": int(args.seed),
         "n_clients": int(result["n_clients"]),
         "epochs": int(args.epochs),
+        "rounds": int(args.epochs),
         "batch": int(args.batch_size),
         "lr": float(args.lr),
         "weight_decay": float(args.weight_decay),
@@ -169,16 +169,16 @@ def main() -> None:
         "hr_weight": float(args.hr_weight),
         "use_amp": bool(use_amp),
         "history": result["history"],
-        "val_terminal":  val_terminal_row["val"],
-        "test_terminal": test_terminal_row["val"],
+        "val_terminal":  terminal_row["val"],
+        "test_terminal": terminal_row["test"],
         "comm_total_bytes": {"upload_cum": 0, "broadcast_cum": 0},
         "drift_l2_mean_over_rounds": 0.0,
         "elapsed_seconds": float(elapsed),
     }
     with (out_dir / "result.json").open("w") as fh:
         json.dump(result_json, fh, indent=2)
-    print(f"[V6-Dyn-A] done.  val.PAPE={val_terminal_row['val']['pape_mean']:.2f}  "
-          f"test.PAPE={test_terminal_row['val']['pape_mean']:.2f}  elapsed={elapsed:.0f}s")
+    print(f"[V6-Dyn-A] done.  val.PAPE={terminal_row['val']['pape_mean']:.2f}  "
+          f"test.PAPE={terminal_row['test']['pape_mean']:.2f}  elapsed={elapsed:.0f}s")
 
 
 if __name__ == "__main__":
