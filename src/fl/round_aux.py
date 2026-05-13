@@ -192,6 +192,7 @@ def _fedavg_round_loop_aux(
                     "loss_mean_last_epoch": history["main_loss"][-1],
                     "n_steps_round": int(round_n),
                 },
+                epoch_equivalent=float(r * local_epochs),
             )
 
     return {
@@ -350,6 +351,7 @@ def _fedprox_round_loop_aux(
                     "loss_mean_last_epoch": history["main_loss"][-1],
                     "n_steps_round": int(round_n),
                 },
+                epoch_equivalent=float(r * local_epochs),
             )
 
     return {
@@ -557,6 +559,7 @@ def _fedrep_round_loop_aux(
                     "loss_mean_last_epoch": history["main_loss"][-1],
                     "n_steps_round": int(round_n),
                 },
+                epoch_equivalent=float(r * local_epochs),
             )
 
     # Return the cold-style FULL state dict (encoder + mean head across all clients).
@@ -699,6 +702,7 @@ def _ditto_round_loop_aux(
                     "loss_mean_last_epoch": history["main_loss"][-1],
                     "n_steps_round": int(gm_n),
                 },
+                epoch_equivalent=float(r * local_epochs),
             )
             # Restore global_model → global_state so the next round broadcasts
             # the right thing.
@@ -938,6 +942,7 @@ def _fedproto_round_loop_aux(
                     "loss_mean_last_epoch": history["main_loss"][-1],
                     "n_steps_round": int(round_n),
                 },
+                epoch_equivalent=float(r * local_epochs),
             )
 
     return {

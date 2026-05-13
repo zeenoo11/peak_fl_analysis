@@ -2,16 +2,16 @@
 
 (한글 요약)
 plan v06-01 §"Goals" G2 — conference 5종 FL 알고리즘의 *라운드별 trajectory*.
-모든 100가구가 학습에 참여하며, 라운드 종료 직후 ``RoundLogger`` 가 100가구
-의 *자기 val 윈도우* 에서 PAPE/HR/MAE/MSE(kW²) 를 across-client 평균/표준편차로
-기록한다.
+모든 114가구(``filter_valid_apartments(min_hours=7000)`` 결과)가 학습에 참여하며,
+라운드 종료 직후 ``RoundLogger`` 가 114가구의 *자기 val 윈도우* 에서 PAPE/HR/MAE/
+MSE(kW²) 를 across-client 평균/표준편차로 기록한다.
 
 Backbone / loss / hyperparameter (전 5종 cell 공통, plan §2)
 -----------------------------------------------------------
 - NBEATSxAux(latent_source='h_generic') — 모든 5종이 동일한 backbone.
 - L = MAE(ŷ, y) + 0.3 · peak_aux(ŷ, y; hr_weight=0.1) — combined loss.
 - AdamW (Adam) lr=1e-3, weight_decay=1e-5.
-- batch=512, rounds=20, local_epochs=2, full participation (C=1.0).
+- batch=512, rounds=20, local_epochs=40, full participation (C=1.0).
 - Algorithm-specific extras: FedProx mu=0.01, FedRep head_epochs=1,
   Ditto lam=0.1, FedProto K=32 lambda_proto=0.1.
 
@@ -100,14 +100,14 @@ def _build_cell_name(algorithm: str, aux_lambda: float, hr_weight: float = 0.1) 
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=(
-            "V6-Dyn-B {FedAvg/FedProx/FedRep/Ditto/FedProto} on 100 UMass 2016 apartments. "
+            "V6-Dyn-B {FedAvg/FedProx/FedRep/Ditto/FedProto} on 114 UMass 2016 apartments. "
             "Single seed × single algorithm per invocation."
         )
     )
     ap.add_argument("--seed", type=int, default=RANDOM_SEED)
     ap.add_argument("--algorithm", required=True, choices=list(_ALGO_PRETTY.keys()))
     ap.add_argument("--rounds", type=int, default=20)
-    ap.add_argument("--local_epochs", type=int, default=2)
+    ap.add_argument("--local_epochs", type=int, default=40)
     ap.add_argument("--batch_size", type=int, default=512)
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--weight_decay", type=float, default=1e-5)
@@ -184,8 +184,7 @@ def main() -> None:
     # 5) Terminal val + test (using a fresh model with the final state).
     fresh = init_backbone_aux(seed=args.seed)
     fresh.load_state_dict(result["final_state_dict"], strict=True)
-    val_terminal_row  = logger.log_terminal(model=fresh, wall_total=elapsed, split="val")
-    test_terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed, split="test")
+    terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed)
     logger.close()
 
     # 6) Aggregate drift_l2_mean_over_rounds from the jsonl rows.
@@ -224,16 +223,16 @@ def main() -> None:
         "C": 1.0,
         "algo_kwargs": algo_kwargs,
         "history": result["history"],
-        "val_terminal":  val_terminal_row["val"],
-        "test_terminal": test_terminal_row["val"],
+        "val_terminal":  terminal_row["val"],
+        "test_terminal": terminal_row["test"],
         "comm_total_bytes": {"upload_cum": upload_cum, "broadcast_cum": broadcast_cum},
         "drift_l2_mean_over_rounds": drift_mean,
         "elapsed_seconds": float(elapsed),
     }
     with (out_dir / "result.json").open("w") as fh:
         json.dump(result_json, fh, indent=2)
-    print(f"[{cell_name}] done.  val.PAPE={val_terminal_row['val']['pape_mean']:.2f}  "
-          f"test.PAPE={test_terminal_row['val']['pape_mean']:.2f}  "
+    print(f"[{cell_name}] done.  val.PAPE={terminal_row['val']['pape_mean']:.2f}  "
+          f"test.PAPE={terminal_row['test']['pape_mean']:.2f}  "
           f"drift_mean={drift_mean:.3f}  elapsed={elapsed:.0f}s")
 
 

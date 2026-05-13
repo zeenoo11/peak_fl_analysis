@@ -52,7 +52,7 @@ All v07 cells share the v06 protocol unchanged:
   K_local=2 (federated), stride=24, AMP bf16 on CUDA.
 - **Loss**: `L = MAE(ŷ, y) + λ_aux · (peak_amp_MSE + hr_weight · peak_hour_CE)`.
 - **Optimiser**: AdamW (Adam) lr=1e-3, weight_decay=1e-5, batch=512.
-- **Round budget**: rounds=20, local_epochs=2, full participation (C=1.0).
+- **Round budget**: rounds=20, local_epochs=40, full participation (C=1.0).
   v07 does **not** sweep this axis (deferred to v07-B in
   `plans/v07-01_loss_and_budget_sweeps.md`).
 - **Algorithms**: centralised pooled SGD (upper bound), FedAvg, FedProx
@@ -112,8 +112,8 @@ mechanism (2), mis-tune, is supported on this cell.
 All five FL algorithms return their best test PAPE at the *boundary*
 `λ = 0`. The trajectories rise strictly with `λ_aux` for FedAvg, FedProx,
 FedRep, Ditto, and FedProto. The cost of going from `λ=0` to v06's default
-`λ=0.3` is +1.5 PAPE (FedAvg, FedProx, FedRep, FedProto) to +3.5 PAPE
-(Ditto) on the test split, with std ≤ 1.1 across seeds — every difference
+`λ=0.3` is +2.28 PAPE (FedRep, minimum) to +3.51 PAPE (Ditto, maximum)
+on the test split, with std ≤ 1.1 across seeds — every difference
 exceeds 2σ.
 
 This is the **incompatibility hypothesis (1)** confirmed: peak-aux is not
@@ -158,10 +158,17 @@ F-codebook-vs-λ:
 
 Figure: `figures/F-codebook-vs-lambda.png`.
 
+> **Note on dual JSON sources**: §3.2 numbers are read from `result.json`
+> `test_terminal.pape_mean`; §4.2 BEFORE numbers are read from
+> `codebook_lift.json` `test_before.pape_mean`. Both compute test PAPE
+> through slightly different aggregation paths, yielding sub-rounding
+> discrepancies (e.g., centralised λ=0: 48.91 vs 48.90; centralised
+> λ=0.1: 48.47 vs 48.46). The qualitative claims are unaffected.
+
 ### §4.3 Finding 3 — codebook absorbs the backbone λ choice
 
-After codebook stacking, all three centralised backbones land within 0.5
-PAPE of each other (44.41 / 44.53 / 44.92). The pre-codebook ordering —
+After codebook stacking, all three centralised backbones land within 0.55
+PAPE of each other (44.41, 44.53, 44.92 — range 0.51). The pre-codebook ordering —
 `λ=0.1 < λ=0 < λ=0.3` — is **not** preserved post-codebook: the strict
 post-codebook optimum is `λ=0` (44.41), with the smallest ΔMAE cost
 (+0.0043 vs +0.0077 / +0.0095 on the other two cells). The v06 §5.3
@@ -193,9 +200,9 @@ or whether it lies in `peak_aux` as a whole.
 Sweep: `hr_weight ∈ {0.05, 0.1, 0.5, 1.0}` × 6 algorithms × 3 seeds, all
 at `λ_aux = 0.1` (centralised v07-A optimum). 54 new runs — the
 default `hr=0.1` cell reuses v07-A's `aux0.1` results, so only
-`hr ∈ {0.05, 0.5, 1.0}` × 6 × 3 = 54 actually executed. Wall-clock ≈ 5h
+`hr ∈ {0.05, 0.5, 1}` × 6 × 3 = 54 actually executed. Wall-clock ≈ 5h
 under 3-way parallelism. Cell suffix: `-aux0.1-hr{V}` (e.g.
-`V6-Dyn-B-FedAvg-aux0.1-hr0.5`).
+`V6-Dyn-B-FedAvg-aux0.1-hr0.5`; hr=1.0 → suffix `-hr1`).
 
 ### §5.2 Results
 
@@ -248,7 +255,7 @@ consistent with the broader reading:
 
 The ordering of effect sizes (PAPE on FL cells):
 
-- 1st-order: `λ_aux = 0` vs `λ_aux = 0.3` → −1.5 to −3.5 PAPE  *(huge — v07-A finding 2)*
+- 1st-order: `λ_aux = 0` vs `λ_aux = 0.3` → −2.28 to −3.51 PAPE  *(huge — v07-A finding 2)*
 - 2nd-order: `hr=1.0` vs `hr=0.1` at `λ=0.1` → −0.2 to −0.7 PAPE  *(small — v07-A2 finding 4)*
 
 The v06 default's primary problem is `λ_aux > 0` itself; redistributing the
@@ -285,13 +292,14 @@ on FL cells (−0.5 to −1.5 PAPE depending on algorithm). v07-A1 (§4)
 extends this finding to centralised, where the gap is smaller (44.41 vs
 44.92 = −0.51 PAPE) but identical in direction. The v07-A2 finding (§5)
 strengthens the recipe: even *within* `λ_aux > 0`, hr_weight retuning
-gives at best −0.7 PAPE on FedAvg, which is dominated by the −1.5 to
-−3.5 PAPE gain from setting `λ_aux = 0` outright.
+gives at best −0.7 PAPE on FedAvg, which is dominated by the −2.28 to
+−3.51 PAPE gain from setting `λ_aux = 0` outright.
 
 ### §6.3 Limitations and deferred questions
 
-1. **Round / local-epoch budget** — `(R=20, E=2)` was held fixed across
-   all v07 cells. The budget axis is what `plans/v07-01` §2 (v07-B) is
+1. **Round / local-epoch budget** — `(R=20, E=40)` was held fixed across
+   all v07 cells (see item 6 below for the audit note on the originally
+   stated E=2). The budget axis is what `plans/v07-01` §2 (v07-B) is
    scoped to, including a FedSGD reference and an `E ∈ {1, 2, 5, 10, 20}`
    sweep at `T = E·R = 80`. v07-B is a *new-driver* axis — `03_fedsgd.py`
    needs to be written to support 1-mini-batch-per-round FedSGD — and is
@@ -314,10 +322,26 @@ gives at best −0.7 PAPE on FedAvg, which is dominated by the −1.5 to
    choice (α_v0) is *not* re-tuned on test (the bit-exact carry-over
    invariant of CLAUDE.md). v07 inherits α_v0 = 1.0 from v06 §5.1.
 
+6. **Round budget mismatch (audit C1)** — `plans/v06-01_round_dynamics.md`
+   and this paper's §2 originally stated `local_epochs = 2`, matching the
+   conference Phase A invariant and giving a nominal budget of
+   `R × E = 20 × 2 = 40` epoch-equivalents per client. The actual runs (all
+   `result.json` files and the v07 launcher at
+   `experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py:108`) used
+   `local_epochs = 40`, i.e. `R × E = 20 × 40 = 800` epoch-equivalents
+   per client — 20× higher compute than the stated protocol. The §2 table
+   above now reflects the true value. The qualitative claims of this paper
+   (centralised interior optimum at λ=0.1; FL strict boundary optimum at
+   λ=0; FL-incompatibility of peak-aux) are not affected by this discrepancy,
+   but absolute PAPE numbers and all λ-cost claims in this draft should be
+   read as pertaining to the **800 epoch-equivalent regime**, not the
+   originally intended 40 epoch-equivalent regime.
+
 Items (1) and (2) are scoped explicitly in
 `plans/v07-01_loss_and_budget_sweeps.md` and will form a follow-up draft;
 item (3) is a deliberate scope decision; items (4) and (5) are
-out-of-scope by the protocol invariants.
+out-of-scope by the protocol invariants; item (6) is a retrospective
+documentation correction.
 
 ## §7 Conclusion
 
@@ -335,7 +359,7 @@ centralised backbones (§4). The five takeaways:
    mono­tonically across `λ ∈ {0.05, 0.1, 0.2, 0.3}`. The FL-incompatibility
    of peak-aux is therefore not a tuning artefact.
 3. After post-hoc federated codebook stacking, the centralised backbone
-   PAPE is absorbed onto a 0.5-PAPE band centred at 44.5; the strict
+   PAPE is absorbed onto a 0.55-PAPE band (range 0.51) centred at 44.5; the strict
    post-codebook optimum is the **MAE-only** backbone (44.41 PAPE), with
    the smallest MAE side-effect (ΔMAE = +0.0043). v06 §5.3's "MAEonly +
    codebook" recommendation generalises to centralised.
@@ -345,7 +369,7 @@ centralised backbones (§4). The five takeaways:
    centralised is robust to hr_weight (range 1.0 PAPE only). The damage
    is borne by the peak-aux gradient as a whole under FedAvg averaging.
 5. Effect sizes order as: `λ_aux = 0` vs `λ_aux = 0.3` (1st order, huge,
-   −1.5 to −3.5 PAPE on FL) ≫ `hr_weight = 1.0` vs default at fixed
+   −2.28 to −3.51 PAPE on FL) ≫ `hr_weight = 1.0` vs default at fixed
    `λ_aux = 0.1` (2nd order, small, −0.7 PAPE). The recommended recipe
    is `λ_aux = 0` + codebook stacking; further within-peak-aux tuning
    yields only marginal additional gains.
@@ -359,7 +383,7 @@ centralised backbones (§4). The five takeaways:
 | v07-A figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section aux` | `outputs/.../figures/F-aux.png` | <1 s |
 | v07-A1 codebook (3 runs centralised λ=0.1) | `experiments/v06_round_dynamics/08_codebook_stacking.py --cell V6-Dyn-A_centralised-aux0.1 --output_namespace v07_loss_budget_sweeps` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-A_centralised-aux0.1/codebook_lift.json` | ≈15 s total |
 | v07-A1 figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section codebook_lambda` | `outputs/.../figures/F-codebook-vs-lambda.png` | <1 s |
-| v07-A2 Phase 1 (54 runs, hr ∈ {0.05, 0.5, 1.0}, λ=0.1) | `experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-{...}-aux0.1-hr{V}/result.json` | ~5h, 3-way per-seed parallel |
+| v07-A2 Phase 1 (54 runs, hr ∈ {0.05, 0.5, 1}, λ=0.1) | `experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py` | `outputs/v07_loss_budget_sweeps/seed{S}/V6-Dyn-{...}-aux0.1-hr{V}/result.json` | ~5h, 3-way per-seed parallel |
 | v07-A2 figure | `experiments/v07_loss_budget_sweeps/08_make_figures.py --section hr` | `outputs/.../figures/F-hr.png` | <1 s |
 | Tests | `pytest tests/test_v07_aux_sweep.py` | 10 unit-tests pass | <3 s |
 
@@ -371,19 +395,19 @@ default `(λ=0.3, hr=0.1)` cells have empty suffixes for back-compat.
 To regenerate the entire v07 paper from scratch with v06 results already
 on disk:
 
-```bash
-uv run python experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py \
-    --seeds 42 123 7 --lambdas 0.05 0.1 0.2 \
+```powershell
+uv run python experiments/v07_loss_budget_sweeps/01_run_aux_sweep.py `
+    --seeds 42 123 7 --lambdas 0.05 0.1 0.2 `
     --algorithms fedavg fedprox fedrep ditto fedproto
 
 # v07-A1 codebook stacking on centralised λ=0.1 (3 seeds)
-for SEED in 42 123 7; do
-  uv run python experiments/v06_round_dynamics/08_codebook_stacking.py \
-      --seed $SEED --cell V6-Dyn-A_centralised-aux0.1 \
+foreach ($SEED in 42, 123, 7) {
+  uv run python experiments/v06_round_dynamics/08_codebook_stacking.py `
+      --seed $SEED --cell V6-Dyn-A_centralised-aux0.1 `
       --output_namespace v07_loss_budget_sweeps
-done
+}
 
-uv run python experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py \
+uv run python experiments/v07_loss_budget_sweeps/02_run_hr_weight_sweep.py `
     --seeds 42 123 7 --hr_weights 0.05 0.5 1.0
 
 uv run python experiments/v07_loss_budget_sweeps/05_aggregate_aux.py --seeds 42 123 7

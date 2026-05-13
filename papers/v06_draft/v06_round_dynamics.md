@@ -74,7 +74,7 @@ hyperparameters:
 | Hyperparameter | Value |
 |---|---|
 | Rounds         | 20 |
-| Local epochs   | 2  |
+| Local epochs   | 40 |
 | Optimiser      | Adam (lr=1e-3, weight_decay=1e-5) |
 | Batch          | 512 |
 | Participation  | full (C=1.0; 114 of 114 clients) |
@@ -85,7 +85,7 @@ Algorithm-specific extras (paper-default values, no per-cell tuning):
 | Algorithm | Extra |
 |---|---|
 | FedProx  | μ = 0.01 (proximal weight) |
-| FedRep   | head_epochs = 1 (1 head + 1 encoder out of 2 local epochs) |
+| FedRep   | head_epochs = 1 (1 head + 39 encoder out of 40 local epochs) |
 | Ditto    | λ = 0.1 (personal-pull weight) |
 | FedProto | K = 32, λ_proto = 0.1 |
 
@@ -160,14 +160,14 @@ PAPE / HR@1 / HR@2 / MAE / MSE(kW²) are computed and aggregated as across-apt m
 
 ### §4.1 Default cell (λ_aux = 0.3)
 
-| Cell | val.PAPE | **test.PAPE** | HR@1 (test) | drift L2 | Upload (MB) | wall (s) |
+| Cell | val.PAPE | **test.PAPE** | HR@1 (test) | drift L2 | Upload (MiB) | wall (s) |
 |---|---|---|---|---|---|---|
 | V6-Dyn-A centralised | 66.33 ± 0.80 | **49.43 ± 0.36** | 20.81 ± 0.03 | 0 | 0 | 35 |
-| FedAvg            | 81.62 ± 3.00 | 51.36 ± 0.61 | 13.46 ± 0.16 | 2.42 | 641  | 725 |
-| FedProx (μ=0.01)  | 81.73 ± 2.35 | 51.40 ± 0.63 | 13.78 ± 0.18 | **1.71** | 641 | 2384 |
-| FedRep (head_ep=1)| 78.24 ± 1.79 | 51.36 ± 0.68 | 13.78 ± 0.62 | 2.20 | **527** | 897  |
-| Ditto (λ=0.1)     | 84.49 ± 2.42 | 51.79 ± 0.47 | 13.84 ± 0.35 | 2.42 | 641  | 4410 |
-| FedProto (K=32)   | 80.93 ± 2.95 | 51.50 ± 0.54 | 13.46 ± 0.34 | 2.43 | 660  | 1574 |
+| FedAvg            | 81.62 ± 3.00 | 51.36 ± 0.61 | 13.46 ± 0.16 | 2.42 | 611  | 725 |
+| FedProx (μ=0.01)  | 81.73 ± 2.35 | 51.40 ± 0.63 | 13.78 ± 0.18 | **1.71** | 611 | 2384 |
+| FedRep (head_ep=1)| 78.24 ± 1.79 | 51.36 ± 0.68 | 13.78 ± 0.62 | 2.20 | **502** | 897  |
+| Ditto (λ=0.1)     | 84.49 ± 2.42 | 51.79 ± 0.47 | 13.84 ± 0.35 | 2.42 | 611  | 4410 |
+| FedProto (K=32)   | 80.93 ± 2.95 | 51.50 ± 0.54 | 13.46 ± 0.34 | 2.43 | 629  | 1574 |
 
 **Centralised vs FL.** Centralised SGD attains test PAPE = 49.43 %; the best FL test PAPE is
 51.36 % (FedAvg). The +2 PAPE deficit holds across all five FL algorithms with std ~0.6
@@ -175,12 +175,12 @@ indicating a real gap, not noise.
 
 **Algorithm equivalence.** The five FL test PAPEs span 51.36 to 51.79 (range 0.43 PAPE)
 within their ~0.6 PAPE std bands. Algorithm choice is *not* a discriminator at 20 rounds with
-2 local epochs. FedProx halves client drift (1.71 vs ~2.42) but does *not* convert that into
+40 local epochs. FedProx halves client drift (1.71 vs ~2.42) but does *not* convert that into
 PAPE improvement, consistent with the FedProx 2020 finding that drift control ≠ accuracy gain
 on convex-ish workloads.
 
-**Cost efficiency.** FedRep uploads 527 MB total (head not broadcast), an 18 % saving versus
-FedAvg's 641 MB at equivalent test PAPE — the Pareto-dominant FL choice. FedProto pays for
+**Cost efficiency.** FedRep uploads 502 MiB total (head not broadcast), an 18 % saving versus
+FedAvg's 611 MiB at equivalent test PAPE — the Pareto-dominant FL choice. FedProto pays for
 prototype broadcast (+8 KB / round) but the resulting accuracy difference is statistically
 zero.
 
@@ -222,10 +222,16 @@ no benefit from rounds 13–20 except a small late descent for FedRep. The traje
 support §4.1's algorithm-equivalence finding visually.
 
 `F2_bytes_vs_val_pape.png` confirms FedRep's Pareto dominance — its trajectory sits
-left-of-and-below FedAvg's at every round.
+left-of-and-below FedAvg's at every round. (F2 x-axis is binary MiB = bytes / 1024².)
 
 `F3_drift_vs_round.png` shows FedProx flat at ~1.7 from round 5 onwards while the other
 four FL algorithms drift up to 2.4–2.6, the cleanest visual signature of FedProx's effect.
+
+**Note on FedRep drift_l2.** FedRep's drift_l2 (2.20) is computed against the per-client
+round-start mean (`mean_head_pre`, `src/fl/round_aux.py:541-548`) rather than the global
+round-start state used by the other four algorithms; the values are therefore not directly
+comparable across algorithms in F3. The qualitative point — that drift control alone does not
+translate to PAPE improvement — is unaffected.
 
 ## §5 Phase 2 — Post-hoc codebook stacking
 
@@ -285,12 +291,14 @@ and obtained:
 
 | Cell | test.PAPE BEFORE | test.PAPE AFTER | ΔPAPE | (vs default ΔPAPE) |
 |---|---|---|---|---|
-| centralised-MAEonly | 48.90 ± 0.68 | **44.41 ± 0.29** | **−4.49 ± 0.56** | (default −4.51) |
-| FedAvg-MAEonly      | 48.43 ± 0.38 | 44.59 ± 0.34 | −3.84 ± 0.06 | (default −5.44) |
-| FedProx-MAEonly     | 48.50 ± 0.02 | 44.84 ± 0.17 | −3.66 ± 0.17 | (default −5.42) |
-| FedRep-MAEonly      | 49.07 ± 0.50 | 45.49 ± 0.68 | −3.58 ± 0.90 | (default −5.60) |
-| **Ditto-MAEonly**   | 48.29 ± 0.32 | **44.20 ± 0.27** | −4.09 ± 0.08 | (default −5.88) |
-| FedProto-MAEonly    | 48.47 ± 0.30 | 44.54 ± 0.26 | −3.93 ± 0.12 | (default −5.61) |
+| centralised-MAEonly | 48.91 ± 0.70 | **44.41 ± 0.29** | **−4.49 ± 0.56** | (default −4.51) |
+| FedAvg-MAEonly      | 48.42 ± 0.37 | 44.59 ± 0.34 | −3.84 ± 0.06 | (default −5.44) |
+| FedProx-MAEonly     | 48.51 ± 0.03 | 44.84 ± 0.17 | −3.66 ± 0.17 | (default −5.42) |
+| FedRep-MAEonly      | 49.08 ± 0.50 | 45.49 ± 0.68 | −3.58 ± 0.90 | (default −5.60) |
+| **Ditto-MAEonly**   | 48.28 ± 0.32 | **44.20 ± 0.27** | −4.09 ± 0.08 | (default −5.88) |
+| FedProto-MAEonly    | 48.49 ± 0.31 | 44.54 ± 0.26 | −3.93 ± 0.12 | (default −5.61) |
+
+*BEFORE values in §4.2 and §5.3 are computed from the same `result.json` `test_terminal.pape_mean` across seeds {42, 123, 7}.*
 
 **Lift survives but shrinks.** Every MAE-only cell still gains 3.6–4.5 PAPE
 points from codebook stacking — the codebook is *not* a free rider on the
@@ -447,7 +455,7 @@ penalty.
 Across both Phase 1 (BEFORE codebook) and Phase 2 (AFTER codebook), the five FL algorithms
 sit within 0.5 PAPE of each other. None of FedProx's drift control, FedRep's
 encoder/head separation, Ditto's personal model, or FedProto's prototype regulariser produces
-a discriminating PAPE advantage at this scale (114 apartments, 20 rounds, 2 local epochs).
+a discriminating PAPE advantage at this scale (114 apartments, 20 rounds, 40 local epochs).
 The recommended choice is **FedRep** (lowest comm cost) for FL training and **federated
 codebook stacking** (Phase 2) for an additional ~5 PAPE.
 
@@ -455,22 +463,30 @@ codebook stacking** (Phase 2) for an additional ~5 PAPE.
 
 1. **Single dataset.** All v06 numbers come from UMass 2016. Generalisation to UK-DALE,
    Pecan Street, or larger client populations is open. Deferred to future work.
-2. **20 rounds with 2 local epochs.** Larger E or larger R may surface algorithm
+2. **20 rounds with 40 local epochs.** Larger E or larger R may surface algorithm
    differences that are invisible at this scale. v07 (`plans/v07-01_loss_and_budget_sweeps.md`)
    sweeps `(E, R)` at fixed total budget T=80 to localise these effects; v06 paper does not
    pre-empt that sweep.
-3. **Loss-weighting sweep deferred.** The peak-aux negative result of §4.2 was hypothesised
+3. **Compute budget mismatch.** v06's originally stated invariant was ~40 epoch-equivalent
+   budget per FL client (R=20 × E=2). The actual runs used R=20 × E=40 = 800
+   epoch-equivalents per client, while the centralised cell trained for 40 epochs. The
+   "conference Phase A bit-equivalent" claim is therefore weaker than originally stated: FL
+   cells received 20× more local compute than centralised. The qualitative comparisons
+   (round-vs-PAPE shape, algorithm equivalence, drift trajectory) still hold because they are
+   relative across FL algorithms, but absolute compute equivalence between the centralised
+   upper bound and the FL cells does not.
+4. **Loss-weighting sweep deferred.** The peak-aux negative result of §4.2 was hypothesised
    to be either (i) heterogeneous label dilution under FedAvg or (ii) a `λ_aux` mis-tune
    carried over from v01's centralised setting. Discriminating between these is v07-A's job
    (`λ_aux ∈ {0, 0.05, 0.1, 0.2, 0.3}` × 6 cells × 3 seeds). v06 reports the negative result
    as-is; §5.3 establishes that the negative result *survives* Phase-2 codebook stacking
    (MAE-only + codebook strictly beats default + codebook), so the operating recipe for v06
    is `λ_aux = 0` + codebook regardless of v07's sweep outcome.
-4. **Centralised codebook reference.** V6-Dyn-A_centralised is an "upper bound" reference but
+5. **Centralised codebook reference.** V6-Dyn-A_centralised is an "upper bound" reference but
    is itself a centralised protocol — a federated codebook on a federated backbone (FedCB on
    FedAvg-Aux) is the closest privacy-preserving pipeline, validated above as
    numerically equivalent (§5.2).
-5. **Round-trajectory codebook.** Whether codebook lift grows monotonically with backbone
+6. **Round-trajectory codebook.** Whether codebook lift grows monotonically with backbone
    round count or plateaus early is open; this requires Phase-1 re-execution with intermediate
    checkpointing. Deferred to v07-C.
 

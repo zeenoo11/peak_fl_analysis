@@ -202,6 +202,68 @@ def test_log_round_omits_test_block_when_test_data_none(tmp_path):
     assert "test" not in rows[0]
 
 
+def test_log_terminal_writes_single_row_with_val_and_test(tmp_path):
+    """log_terminal must append exactly one row (round = -1) carrying both val
+    and test blocks when test_data is attached (plan §3 single-row spec).
+    """
+    apt = "AptFake"
+    x = np.zeros((3, 96), dtype=np.float32)
+    y = np.zeros((3, 24), dtype=np.float32)
+    splits = {apt: _make_split_block(0.0, 1.0, x, y)}
+    val_data  = {apt: {"x": x, "y": y}}
+    test_data = {apt: {"x": x, "y": y}}
+
+    log_path = tmp_path / "round_log.jsonl"
+    model = _ConstPredModel(c=0.0)
+    with RoundLogger(log_path, splits=splits,
+                     val_data=val_data, test_data=test_data) as logger:
+        logger.log_terminal(
+            model=model,
+            comm_total={"upload_bytes_round": 4096, "broadcast_bytes_round": 2048},
+            wall_total=12.5,
+        )
+
+    rows = [json.loads(l) for l in log_path.read_text().strip().splitlines()]
+    assert len(rows) == 1, "log_terminal must write exactly one row"
+    r = rows[0]
+    assert r["round"] == -1
+    assert r["epoch_equivalent"] == -1.0
+    assert "val" in r and "test" in r, "both val and test blocks required"
+    for k in ("pape_mean", "hr@1_mean", "n_clients", "n_windows_total"):
+        assert k in r["val"]
+        assert k in r["test"]
+    # comm_total: *_round and *_cum populated to the same total.
+    assert r["comm"]["upload_bytes_round"]    == 4096
+    assert r["comm"]["upload_bytes_cum"]      == 4096
+    assert r["comm"]["broadcast_bytes_round"] == 2048
+    assert r["comm"]["broadcast_bytes_cum"]   == 2048
+    assert r["wall_seconds_round"] == 12.5
+
+
+def test_log_terminal_omits_test_block_when_test_data_none(tmp_path):
+    """log_terminal back-compat: when test_data=None, the row contains only
+    the val block (no `test` key) — same convention as log_round.
+    """
+    apt = "AptFake"
+    x = np.zeros((3, 96), dtype=np.float32)
+    y = np.zeros((3, 24), dtype=np.float32)
+    splits = {apt: _make_split_block(0.0, 1.0, x, y)}
+    val_data = {apt: {"x": x, "y": y}}
+
+    log_path = tmp_path / "round_log.jsonl"
+    model = _ConstPredModel(c=0.0)
+    with RoundLogger(log_path, splits=splits,
+                     val_data=val_data, test_data=None) as logger:
+        logger.log_terminal(model=model)
+
+    rows = [json.loads(l) for l in log_path.read_text().strip().splitlines()]
+    assert len(rows) == 1
+    r = rows[0]
+    assert r["round"] == -1
+    assert "val" in r
+    assert "test" not in r
+
+
 def test_drift_l2_zero_when_client_states_none():
     server_state = OrderedDict([("w", torch.randn(4))])
     assert _drift_l2(server_state, None) == 0.0

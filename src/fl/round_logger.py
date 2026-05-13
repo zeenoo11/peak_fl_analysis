@@ -289,33 +289,30 @@ class RoundLogger:
         model: nn.Module,
         comm_total: Optional[dict] = None,
         wall_total: float = 0.0,
-        split: str = "test",
     ) -> dict:
-        """Append the terminal eval row with ``round = -1``.
+        """Append the terminal eval row with ``round = -1`` (single row, plan §3 spec).
 
-        Uses ``self.test_data`` when ``split=='test'`` and ``self.val_data``
-        when ``split=='val'``. ``comm_total`` is reported in the comm block
-        with both ``*_round`` and ``*_cum`` populated to the same total
-        (the terminal row stands alone).
+        Evaluates val (always) and test (only when ``self.test_data is not None``)
+        and writes a single JSONL row. The row always contains a ``"val"`` block;
+        the ``"test"`` key is included only when test data is attached, mirroring
+        ``log_round`` back-compat (``test_data=None`` → no ``test`` key). ``comm_total``
+        is reported with both ``*_round`` and ``*_cum`` populated to the same total.
         """
-        if split not in ("val", "test"):
-            raise ValueError(f"log_terminal: split must be 'val' or 'test', got {split}")
-        eval_data = self.test_data if split == "test" else self.val_data
-        if eval_data is None:
-            raise ValueError(f"log_terminal: no {split}_data attached to logger")
-
         comm = comm_total or {}
         upload_total = int(comm.get("upload_bytes_round", self._upload_cum))
         broadcast_total = int(comm.get("broadcast_bytes_round", self._broadcast_cum))
 
-        eval_block = _per_client_eval(model, eval_data, self.splits, batch_size=self.batch_size)
-        row = {
+        val_block = _per_client_eval(model, self.val_data, self.splits, batch_size=self.batch_size)
+        test_block = (
+            _per_client_eval(model, self.test_data, self.splits, batch_size=self.batch_size)
+            if self.test_data is not None else None
+        )
+        row: dict = {
             "round": -1,
-            "split": split,
             "epoch_equivalent": -1.0,
-            "val":   eval_block,                # keep the same key for parser sanity
+            "val": val_block,
             "train": {"loss_mean_last_epoch": None, "n_steps_round": None},
-            "comm":  {
+            "comm": {
                 "upload_bytes_round":    upload_total,
                 "upload_bytes_cum":      upload_total,
                 "broadcast_bytes_round": broadcast_total,
@@ -324,6 +321,8 @@ class RoundLogger:
             "drift_l2": 0.0,
             "wall_seconds_round": float(wall_total),
         }
+        if test_block is not None:
+            row["test"] = test_block
         self._fh.write(json.dumps(row) + "\n")
         self._fh.flush()
         return row

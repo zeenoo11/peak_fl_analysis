@@ -1,8 +1,9 @@
-"""V6-Dyn-A — centralised pooled SGD on 100 UMass apartments (per-seed driver).
+"""V6-Dyn-A — centralised pooled SGD on 114 UMass apartments (per-seed driver).
 
 (한글 요약)
 plan v06-01 §"Goals" G1 — v06 의 *상한선* (centralised pooled SGD upper bound)
-및 round-logger 동작을 검증하는 Gate 1 cell. 100가구 train 윈도우를 단일
+및 round-logger 동작을 검증하는 Gate 1 cell. 114가구
+(``filter_valid_apartments(min_hours=7000)`` 결과) train 윈도우를 단일
 DataLoader 로 합쳐 NBEATSxAux 를 학습하고, 매 epoch 끝에 RoundLogger 가 동일한
 ``round_log.jsonl`` schema 로 across-client val 평균을 기록한다.
 
@@ -85,7 +86,7 @@ def _build_cell_name(aux_lambda: float, hr_weight: float = 0.1) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=(
-            "V6-Dyn-A centralised pooled SGD on 100 UMass 2016 apartments. "
+            "V6-Dyn-A centralised pooled SGD on 114 UMass 2016 apartments. "
             "Single seed per invocation; outer launcher loops over {42,123,7}."
         )
     )
@@ -151,8 +152,7 @@ def main() -> None:
     # 6) Terminal val + test rows.
     fresh = init_backbone_aux(seed=args.seed)
     fresh.load_state_dict(result["final_state_dict"], strict=True)
-    val_terminal_row  = logger.log_terminal(model=fresh, wall_total=elapsed, split="val")
-    test_terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed, split="test")
+    terminal_row = logger.log_terminal(model=fresh, wall_total=elapsed)
     logger.close()
 
     # 7) result.json (conference-compatible schema).
@@ -162,6 +162,7 @@ def main() -> None:
         "seed": int(args.seed),
         "n_clients": int(result["n_clients"]),
         "epochs": int(args.epochs),
+        "rounds": int(args.epochs),
         "batch": int(args.batch_size),
         "lr": float(args.lr),
         "weight_decay": float(args.weight_decay),
@@ -169,16 +170,16 @@ def main() -> None:
         "hr_weight": float(args.hr_weight),
         "use_amp": bool(use_amp),
         "history": result["history"],
-        "val_terminal":  val_terminal_row["val"],
-        "test_terminal": test_terminal_row["val"],
+        "val_terminal":  terminal_row["val"],
+        "test_terminal": terminal_row["test"],
         "comm_total_bytes": {"upload_cum": 0, "broadcast_cum": 0},
         "drift_l2_mean_over_rounds": 0.0,
         "elapsed_seconds": float(elapsed),
     }
     with (out_dir / "result.json").open("w") as fh:
         json.dump(result_json, fh, indent=2)
-    print(f"[V6-Dyn-A] done.  val.PAPE={val_terminal_row['val']['pape_mean']:.2f}  "
-          f"test.PAPE={test_terminal_row['val']['pape_mean']:.2f}  elapsed={elapsed:.0f}s")
+    print(f"[V6-Dyn-A] done.  val.PAPE={terminal_row['val']['pape_mean']:.2f}  "
+          f"test.PAPE={terminal_row['test']['pape_mean']:.2f}  elapsed={elapsed:.0f}s")
 
 
 if __name__ == "__main__":
