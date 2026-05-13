@@ -22,10 +22,13 @@ from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Pattern: V6-Dyn-B-<Algo>-aux<lam>-hr<hr>  (λ fixed at 0.1, hr ≠ 0.1)
+# Pattern: V6-Dyn-B-<Algo>-aux0.1-hr<hr>  (v07-A2 sweep fixes λ=0.1 by design;
+# the regex enforces that constraint so a stray `-aux0.3-hr...` cell name does
+# not slip through `_PAT_AUX01_HR.match`. ``lam`` is still exposed as a named
+# group for symmetry with the aux-only regex elsewhere; it is always "0.1".)
 _PAT_AUX01_HR = re.compile(
     r"^V6-Dyn-B-(FedAvg|FedProx|FedRep|Ditto|FedProto)"
-    r"-aux(?P<lam>[0-9.]+)"
+    r"-aux(?P<lam>0\.1)"
     r"-hr(?P<hr>[0-9.]+)$"
 )
 

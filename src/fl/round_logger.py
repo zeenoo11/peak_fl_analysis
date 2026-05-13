@@ -292,9 +292,11 @@ class RoundLogger:
     ) -> dict:
         """Append the terminal eval row with ``round = -1`` (single row, plan §3 spec).
 
-        Evaluates both val and test splits in one call and writes a single JSONL row
-        containing both ``"val"`` and ``"test"`` blocks. ``comm_total`` is reported
-        with both ``*_round`` and ``*_cum`` populated to the same total.
+        Evaluates val (always) and test (only when ``self.test_data is not None``)
+        and writes a single JSONL row. The row always contains a ``"val"`` block;
+        the ``"test"`` key is included only when test data is attached, mirroring
+        ``log_round`` back-compat (``test_data=None`` → no ``test`` key). ``comm_total``
+        is reported with both ``*_round`` and ``*_cum`` populated to the same total.
         """
         comm = comm_total or {}
         upload_total = int(comm.get("upload_bytes_round", self._upload_cum))

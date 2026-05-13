@@ -1,8 +1,9 @@
-"""V6-Dyn-A — centralised pooled SGD on 100 UMass apartments (per-seed driver).
+"""V6-Dyn-A — centralised pooled SGD on 114 UMass apartments (per-seed driver).
 
 (한글 요약)
 plan v06-01 §"Goals" G1 — v06 의 *상한선* (centralised pooled SGD upper bound)
-및 round-logger 동작을 검증하는 Gate 1 cell. 100가구 train 윈도우를 단일
+및 round-logger 동작을 검증하는 Gate 1 cell. 114가구
+(``filter_valid_apartments(min_hours=7000)`` 결과) train 윈도우를 단일
 DataLoader 로 합쳐 NBEATSxAux 를 학습하고, 매 epoch 끝에 RoundLogger 가 동일한
 ``round_log.jsonl`` schema 로 across-client val 평균을 기록한다.
 
@@ -85,7 +86,7 @@ def _build_cell_name(aux_lambda: float, hr_weight: float = 0.1) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=(
-            "V6-Dyn-A centralised pooled SGD on 100 UMass 2016 apartments. "
+            "V6-Dyn-A centralised pooled SGD on 114 UMass 2016 apartments. "
             "Single seed per invocation; outer launcher loops over {42,123,7}."
         )
     )

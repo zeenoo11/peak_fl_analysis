@@ -2,9 +2,9 @@
 
 (한글 요약)
 plan v06-01 §"Goals" G2 — conference 5종 FL 알고리즘의 *라운드별 trajectory*.
-모든 100가구가 학습에 참여하며, 라운드 종료 직후 ``RoundLogger`` 가 100가구
-의 *자기 val 윈도우* 에서 PAPE/HR/MAE/MSE(kW²) 를 across-client 평균/표준편차로
-기록한다.
+모든 114가구(``filter_valid_apartments(min_hours=7000)`` 결과)가 학습에 참여하며,
+라운드 종료 직후 ``RoundLogger`` 가 114가구의 *자기 val 윈도우* 에서 PAPE/HR/MAE/
+MSE(kW²) 를 across-client 평균/표준편차로 기록한다.
 
 Backbone / loss / hyperparameter (전 5종 cell 공통, plan §2)
 -----------------------------------------------------------
@@ -100,7 +100,7 @@ def _build_cell_name(algorithm: str, aux_lambda: float, hr_weight: float = 0.1) 
 def main() -> None:
     ap = argparse.ArgumentParser(
         description=(
-            "V6-Dyn-B {FedAvg/FedProx/FedRep/Ditto/FedProto} on 100 UMass 2016 apartments. "
+            "V6-Dyn-B {FedAvg/FedProx/FedRep/Ditto/FedProto} on 114 UMass 2016 apartments. "
             "Single seed × single algorithm per invocation."
         )
     )
