@@ -63,9 +63,13 @@ from utils.metrics import compute_hr, compute_mae, compute_mse, compute_pape
 # Cell-name allowlist:
 # - v06 default (λ=0.3) + MAEonly (λ=0)        → "" / "-MAEonly"
 # - v07-A new lambdas (λ ∈ {0.05, 0.1, 0.2})   → "-aux{V}"
-# 6 algorithms × 5 lambda-suffixes = 30 valid cells.
+# - v07-A high-λ extension (λ ∈ {0.5, 0.7, 1}) → "-aux{V}"
+# 6 algorithms × 8 lambda-suffixes = 48 valid cells.
 _FL_BASES = ["FedAvg", "FedProx", "FedRep", "Ditto", "FedProto"]
-_LAMBDA_SUFFIXES = ("", "-MAEonly", "-aux0.05", "-aux0.1", "-aux0.2")
+_LAMBDA_SUFFIXES = (
+    "", "-MAEonly", "-aux0.05", "-aux0.1", "-aux0.2",
+    "-aux0.5", "-aux0.7", "-aux1",
+)
 _CENTRAL_CELLS = [f"V6-Dyn-A_centralised{suf}" for suf in _LAMBDA_SUFFIXES]
 _FL_CELLS = [f"V6-Dyn-B-{b}{suf}" for b in _FL_BASES for suf in _LAMBDA_SUFFIXES]
 _VALID_CELLS = _CENTRAL_CELLS + _FL_CELLS
