@@ -2,7 +2,7 @@
 
 (한글 요약)
 v06 Phase 1 (round-level FL training dynamics) 가 30종 cell × 3 seeds = 90
-backbone artefact 를 이미 ``outputs/v06_round_dynamics/seed{S}/{cell}/final_state_dict.pt``
+backbone artefact 를 이미 ``outputs/v08_round_dynamics_long/seed{S}/{cell}/final_state_dict.pt``
 로 남겼다. 이 스크립트는 그 backbone 들을 **freeze 한 채** v01-v05 의 Peak-VQ
 codebook 을 *post-hoc stacking* 해서 per-client TEST split (20%) 에 대한
 codebook lift 를 측정한다.
@@ -18,7 +18,7 @@ Correction = CMO-only (Cluster-Mean Offset, Gaussian template α_w1 dropped):
     ŷ_corr = ŷ_base + α_v0 · o_{c*}    (α_v0 default = 1.0)
 
 Output (per seed × per cell):
-    ``outputs/v06_round_dynamics/seed{S}/{cell}/codebook_lift.json``
+    ``outputs/v08_round_dynamics_long/seed{S}/{cell}/codebook_lift.json``
 
 Per-seed argparse — multi-seed × multi-cell sweep 은 사용자 launcher 가 30 cells
 × 3 seeds = 90 회 호출 (memory: feedback_argparse_per_seed). 이 스크립트는 한
@@ -310,8 +310,8 @@ def main() -> None:
                          "(e.g. '_alpha1.5' or '_K4') so an ablation does not "
                          "overwrite the default codebook_lift.json. Empty "
                          "string = the canonical default file path.")
-    ap.add_argument("--output_namespace", type=str, default="v06_round_dynamics",
-                    help="Top-level output sub-directory under outputs/ (default: v06_round_dynamics; "
+    ap.add_argument("--output_namespace", type=str, default="v08_round_dynamics_long",
+                    help="Top-level output sub-directory under outputs/ (default: v08_round_dynamics_long; "
                          "v07 launcher overrides to v07_loss_budget_sweeps to read v07 backbones).")
     args = ap.parse_args()
 
@@ -320,11 +320,22 @@ def main() -> None:
     use_amp = not args.no_amp
 
     cell_dir = OUTPUT_DIR / args.output_namespace / f"seed{args.seed}" / args.cell
-    backbone_ckpt = cell_dir / "final_state_dict.pt"
+    # Ditto convention fix (audit C1): final_state_dict.pt for Ditto is the
+    # mean of personal models — not apples-to-apples with the global trunks
+    # of other FL algorithms. Use global_state_dict.pt (FedAvg trunk) when
+    # available so Phase 2 codebook comparison is fair across algorithms.
+    is_ditto = "Ditto" in args.cell
+    global_ckpt = cell_dir / "global_state_dict.pt"
+    if is_ditto and global_ckpt.exists():
+        backbone_ckpt = global_ckpt
+        print(f"[{args.cell} / phase2] Ditto cell: using global_state_dict.pt "
+              f"(FedAvg trunk) instead of final_state_dict.pt (mean_personal).")
+    else:
+        backbone_ckpt = cell_dir / "final_state_dict.pt"
     if not backbone_ckpt.exists():
         raise FileNotFoundError(
             f"v06 Phase 2 requires a Phase 1 backbone artefact at {backbone_ckpt}. "
-            f"Run experiments/v06_round_dynamics/01_centralised.py or 02_fl_dynamics.py "
+            f"Run experiments/v08_round_dynamics_long/01_centralised.py or 02_fl_dynamics.py "
             f"for seed={args.seed}, cell={args.cell} first (does NOT silently retrain)."
         )
 

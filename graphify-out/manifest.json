@@ -1,0 +1,1107 @@
+{
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\extract_paper_evidence.py": {
+    "mtime": 1777216018.4236736,
+    "ast_hash": "8cb3c38114bfd5331e314d1a2bfcac65",
+    "semantic_hash": "8cb3c38114bfd5331e314d1a2bfcac65"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\conference\\ablation\\codebook_module_effect.py": {
+    "mtime": 1777477940.8036108,
+    "ast_hash": "58c3e5539524426d7d34e115feb1b9ae",
+    "semantic_hash": "58c3e5539524426d7d34e115feb1b9ae"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\conference\\pipeline\\01_phase_a_train_backbone.py": {
+    "mtime": 1777477771.6868079,
+    "ast_hash": "501d977028a68986604aaeaa71790439",
+    "semantic_hash": "501d977028a68986604aaeaa71790439"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\conference\\pipeline\\02_phase_b_fit_federated_codebook.py": {
+    "mtime": 1777477830.3702867,
+    "ast_hash": "8a31d96c49bc4deeac6a705e517fc790",
+    "semantic_hash": "8a31d96c49bc4deeac6a705e517fc790"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\conference\\pipeline\\03_phase_c_cmo_inference.py": {
+    "mtime": 1777477884.3920407,
+    "ast_hash": "34e87e37ad78aad27b8867cf7ec92cac",
+    "semantic_hash": "34e87e37ad78aad27b8867cf7ec92cac"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\nbeats_analysis\\probe_h_generic.py": {
+    "mtime": 1777207313.105527,
+    "ast_hash": "efa058f17e10a228a39535716a4194f2",
+    "semantic_hash": "efa058f17e10a228a39535716a4194f2"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\nbeats_analysis\\train_clean_nbeatsx.py": {
+    "mtime": 1777207224.2455657,
+    "ast_hash": "6244ca7b1326702b44220fba55d8c59a",
+    "semantic_hash": "6244ca7b1326702b44220fba55d8c59a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\01_decompose_daily_peak.py": {
+    "mtime": 1777394575.3297908,
+    "ast_hash": "889ff14d9f467be43000b6c53db72ac2",
+    "semantic_hash": "889ff14d9f467be43000b6c53db72ac2"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\02_decompose_50hh.py": {
+    "mtime": 1777394752.622672,
+    "ast_hash": "1a1ff6c591bd425ef7eb2de92947ca48",
+    "semantic_hash": "1a1ff6c591bd425ef7eb2de92947ca48"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\03_intercorr_pca_loo.py": {
+    "mtime": 1777395655.4267168,
+    "ast_hash": "8e73f15a642fbc012ec5d2b8ee247e82",
+    "semantic_hash": "8e73f15a642fbc012ec5d2b8ee247e82"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\04_transfer_experiment.py": {
+    "mtime": 1777396092.1988716,
+    "ast_hash": "14aeefd30b1dbae00e2bc2c23a90101a",
+    "semantic_hash": "14aeefd30b1dbae00e2bc2c23a90101a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\05_k_sweep_random_control.py": {
+    "mtime": 1777397060.5520518,
+    "ast_hash": "e990d5f7fe95970d89cab8e288938e1a",
+    "semantic_hash": "e990d5f7fe95970d89cab8e288938e1a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\06_verify_paper_h4.py": {
+    "mtime": 1777398036.9307535,
+    "ast_hash": "10fd30ad585da7e3406b7b48c700781f",
+    "semantic_hash": "10fd30ad585da7e3406b7b48c700781f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\07_within_hh_peak_hour.py": {
+    "mtime": 1777398878.9294412,
+    "ast_hash": "777990166e28fe4106763daf19b5e216",
+    "semantic_hash": "777990166e28fe4106763daf19b5e216"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\01_train_arms.py": {
+    "mtime": 1777208963.758391,
+    "ast_hash": "c0a8e546f956daabc33268d1ff005c8e",
+    "semantic_hash": "c0a8e546f956daabc33268d1ff005c8e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\02_fit_t4_projection.py": {
+    "mtime": 1777273767.108207,
+    "ast_hash": "5ebda1abf32447d3e4003866c578afca",
+    "semantic_hash": "5ebda1abf32447d3e4003866c578afca"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\03_probe_h1a.py": {
+    "mtime": 1777273775.4762845,
+    "ast_hash": "30db21a36294e9232543fce66af3da0d",
+    "semantic_hash": "30db21a36294e9232543fce66af3da0d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\04_quantize_h1b.py": {
+    "mtime": 1777273780.84151,
+    "ast_hash": "23f236f604680cc581a2c819582d6be6",
+    "semantic_hash": "23f236f604680cc581a2c819582d6be6"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\05_coldstart_h1c.py": {
+    "mtime": 1777209127.0864813,
+    "ast_hash": "e5e788d4e48d029b2c621b98fb8db961",
+    "semantic_hash": "e5e788d4e48d029b2c621b98fb8db961"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\06_aggregate_report.py": {
+    "mtime": 1777209892.2038043,
+    "ast_hash": "7a9d91c84294dc8b1055897ab867ebca",
+    "semantic_hash": "7a9d91c84294dc8b1055897ab867ebca"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\07_iter2_analysis.py": {
+    "mtime": 1777210317.937014,
+    "ast_hash": "938254d15e30b9e3e94944b8c6f6c617",
+    "semantic_hash": "938254d15e30b9e3e94944b8c6f6c617"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\08_iter3_hour_aware.py": {
+    "mtime": 1777273786.3536234,
+    "ast_hash": "fb884064d9934c2f0ff0e18aec073ac9",
+    "semantic_hash": "fb884064d9934c2f0ff0e18aec073ac9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\09_iter4_mechanisms.py": {
+    "mtime": 1777273795.1093838,
+    "ast_hash": "5a0907e7450a2abb6f71cfb5650a18cb",
+    "semantic_hash": "5a0907e7450a2abb6f71cfb5650a18cb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\10_iter5D_w5_grid.py": {
+    "mtime": 1777212656.2948327,
+    "ast_hash": "92799abf71a4fb3bf051963ad04aac67",
+    "semantic_hash": "92799abf71a4fb3bf051963ad04aac67"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\11_iter5A_hrweight.py": {
+    "mtime": 1777212877.727015,
+    "ast_hash": "18ee40904ff009a1489a98560d2e8a67",
+    "semantic_hash": "18ee40904ff009a1489a98560d2e8a67"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\12_iter5B_calendar.py": {
+    "mtime": 1777213022.625041,
+    "ast_hash": "fb17cd3757585110e8dc6ef0a1aea0eb",
+    "semantic_hash": "fb17cd3757585110e8dc6ef0a1aea0eb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\13_iter5C_nhits.py": {
+    "mtime": 1777213123.4979024,
+    "ast_hash": "ebf73ddba208d114eed9a4cf9b1d6a50",
+    "semantic_hash": "ebf73ddba208d114eed9a4cf9b1d6a50"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\14_iter5_aggregate.py": {
+    "mtime": 1777213229.5649095,
+    "ast_hash": "5645be2b743b794e63ea0cb3bf811f15",
+    "semantic_hash": "5645be2b743b794e63ea0cb3bf811f15"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\15_E1_peak_aux_ablation.py": {
+    "mtime": 1777217862.2628293,
+    "ast_hash": "dce845321bcf26ec8c86e81caaed0c49",
+    "semantic_hash": "dce845321bcf26ec8c86e81caaed0c49"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\16_E3_multiseed.py": {
+    "mtime": 1777273797.7761025,
+    "ast_hash": "ae901d1c2f7bc39e5a2a3a491c396b3e",
+    "semantic_hash": "ae901d1c2f7bc39e5a2a3a491c396b3e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\17_E4_cluster_benefit.py": {
+    "mtime": 1777218070.191171,
+    "ast_hash": "42d840ad2ad4fc94566adf3b6ec9187a",
+    "semantic_hash": "42d840ad2ad4fc94566adf3b6ec9187a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\18_E_aggregate.py": {
+    "mtime": 1777273801.0189028,
+    "ast_hash": "1920c6386e0bf42241fe2b587a98c826",
+    "semantic_hash": "1920c6386e0bf42241fe2b587a98c826"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\19_iv_weather_calendar.py": {
+    "mtime": 1777220581.8914163,
+    "ast_hash": "ea7aba38c6e22b23c5e171d92a9307e3",
+    "semantic_hash": "ea7aba38c6e22b23c5e171d92a9307e3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\20_make_paper_figures.py": {
+    "mtime": 1777220657.9993517,
+    "ast_hash": "c7840674f14c5af55b07969fa3ba4d5c",
+    "semantic_hash": "c7840674f14c5af55b07969fa3ba4d5c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\21_train_household_vq.py": {
+    "mtime": 1777274696.0158565,
+    "ast_hash": "9a23e24c3b0be775c616de79964e648a",
+    "semantic_hash": "9a23e24c3b0be775c616de79964e648a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v01_peak_from_latent\\__init__.py": {
+    "mtime": 1777208917.5861366,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\01_make_split.py": {
+    "mtime": 1777303106.9618154,
+    "ast_hash": "a975b85c4a0a29589d2e2253cdf05540",
+    "semantic_hash": "a975b85c4a0a29589d2e2253cdf05540"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\02_train_arms.py": {
+    "mtime": 1777303184.7735834,
+    "ast_hash": "980e0bb93a35d987a3f6e44cb0ab7abf",
+    "semantic_hash": "980e0bb93a35d987a3f6e44cb0ab7abf"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\03_fit_codebook.py": {
+    "mtime": 1777303203.3882184,
+    "ast_hash": "bab0cf8a5096441bf1e0253d45b96ba7",
+    "semantic_hash": "bab0cf8a5096441bf1e0253d45b96ba7"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\04_coldstart_eval.py": {
+    "mtime": 1777360080.2261176,
+    "ast_hash": "905f6c5daea53e5da08258f5c662e022",
+    "semantic_hash": "905f6c5daea53e5da08258f5c662e022"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\05_E1_ablation.py": {
+    "mtime": 1777304079.098913,
+    "ast_hash": "b78f01e6dd2894bc7c819f07be1425ad",
+    "semantic_hash": "b78f01e6dd2894bc7c819f07be1425ad"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\06_W_component_ablation.py": {
+    "mtime": 1777360080.2261176,
+    "ast_hash": "76ec08c555099879980b47e08e61aae0",
+    "semantic_hash": "76ec08c555099879980b47e08e61aae0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\07_aggregate_seeds.py": {
+    "mtime": 1777305139.892649,
+    "ast_hash": "357e8e1786f9809f585448cea8f42fbd",
+    "semantic_hash": "357e8e1786f9809f585448cea8f42fbd"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\08_make_v02_figures.py": {
+    "mtime": 1777304728.9232342,
+    "ast_hash": "5ef5be221502179c40e266b67d3941d3",
+    "semantic_hash": "5ef5be221502179c40e266b67d3941d3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\__init__.py": {
+    "mtime": 1777278810.858141,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v03_kshot_pfl\\00_mvp_dryrun.py": {
+    "mtime": 1777360080.2271185,
+    "ast_hash": "6a091293fbcafa3361af999e7fc3485d",
+    "semantic_hash": "6a091293fbcafa3361af999e7fc3485d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v03_kshot_pfl\\__init__.py": {
+    "mtime": 1777284862.8407886,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\00_tune_hyperparams.py": {
+    "mtime": 1777360080.2281196,
+    "ast_hash": "4abcd34e990ea8b42cabcdbff39334a0",
+    "semantic_hash": "4abcd34e990ea8b42cabcdbff39334a0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\01_fl_train.py": {
+    "mtime": 1777360080.2281196,
+    "ast_hash": "182ee14d454afdb3bc5235abf1265f2a",
+    "semantic_hash": "182ee14d454afdb3bc5235abf1265f2a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\02_nf_train.py": {
+    "mtime": 1777360080.2291176,
+    "ast_hash": "9ed62c8b5c1e00934e536c78fc301eb0",
+    "semantic_hash": "9ed62c8b5c1e00934e536c78fc301eb0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\03_fm_zero_shot.py": {
+    "mtime": 1777360080.2291176,
+    "ast_hash": "b694e3264671140adee8e9f918448ab1",
+    "semantic_hash": "b694e3264671140adee8e9f918448ab1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\04_peakvq_on_fl.py": {
+    "mtime": 1777360080.2301188,
+    "ast_hash": "421e983e374554729e04baeb96b4ef4d",
+    "semantic_hash": "421e983e374554729e04baeb96b4ef4d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\05_heterogeneity.py": {
+    "mtime": 1777360080.2311177,
+    "ast_hash": "4c287e2214addb6f4e06984ea0cf5fde",
+    "semantic_hash": "4c287e2214addb6f4e06984ea0cf5fde"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\06_communication.py": {
+    "mtime": 1777360080.2311177,
+    "ast_hash": "528f4e9304b5763a8b178e519a0dddb1",
+    "semantic_hash": "528f4e9304b5763a8b178e519a0dddb1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\07_aggregate.py": {
+    "mtime": 1777360080.2321193,
+    "ast_hash": "782921d46c4392a435e7a2104c2e9fab",
+    "semantic_hash": "782921d46c4392a435e7a2104c2e9fab"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\08_make_v04_figures.py": {
+    "mtime": 1777360080.233118,
+    "ast_hash": "03ca2421b692f3b0cad81778fff5f124",
+    "semantic_hash": "03ca2421b692f3b0cad81778fff5f124"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\01_rerun_nhits.py": {
+    "mtime": 1777360185.6292684,
+    "ast_hash": "1429882e290cb6c3fd23f794fdb320d3",
+    "semantic_hash": "1429882e290cb6c3fd23f794fdb320d3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\02_fedavg_nbeatsx_aux.py": {
+    "mtime": 1777360185.630268,
+    "ast_hash": "a99534b40a5aa044eb7cfe0601937e49",
+    "semantic_hash": "a99534b40a5aa044eb7cfe0601937e49"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\03_m_sensitivity.py": {
+    "mtime": 1777360185.6312702,
+    "ast_hash": "6558dec2bcb6e5ca376f23178778fa46",
+    "semantic_hash": "6558dec2bcb6e5ca376f23178778fa46"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\04_fedproto.py": {
+    "mtime": 1777360185.6312702,
+    "ast_hash": "af99140c0c064af24ea31a74a6fca300",
+    "semantic_hash": "af99140c0c064af24ea31a74a6fca300"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\05_local_only_holdout.py": {
+    "mtime": 1777360185.632269,
+    "ast_hash": "d41bb12e871e172b5b4f5015938874a5",
+    "semantic_hash": "d41bb12e871e172b5b4f5015938874a5"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\01_fedcb_codebook.py": {
+    "mtime": 1777448729.5810308,
+    "ast_hash": "1039a00c53c4adb717cf85f76b2543ab",
+    "semantic_hash": "1039a00c53c4adb717cf85f76b2543ab"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\02_aggregate.py": {
+    "mtime": 1777448918.7616498,
+    "ast_hash": "bebba3829232b74d8d95afc22f8902e1",
+    "semantic_hash": "bebba3829232b74d8d95afc22f8902e1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\03_communication.py": {
+    "mtime": 1777447823.4807477,
+    "ast_hash": "b25c1297b77b5893a798e4d118aee3a5",
+    "semantic_hash": "b25c1297b77b5893a798e4d118aee3a5"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\04_recompute_mse.py": {
+    "mtime": 1777456611.622579,
+    "ast_hash": "614fce444dc6e28f123147b5e4393a33",
+    "semantic_hash": "614fce444dc6e28f123147b5e4393a33"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\05_recompute_mse_fm.py": {
+    "mtime": 1777459620.7598712,
+    "ast_hash": "95978f8e1fd663f310546109f08d2cc6",
+    "semantic_hash": "95978f8e1fd663f310546109f08d2cc6"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\01_centralised.py": {
+    "mtime": 1778659120.4943523,
+    "ast_hash": "57aca949291b651be5f72ba1f6aa95cb",
+    "semantic_hash": "57aca949291b651be5f72ba1f6aa95cb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\02_fl_dynamics.py": {
+    "mtime": 1778659120.4953527,
+    "ast_hash": "c34cecb08549e157ccfbe8e6484d810f",
+    "semantic_hash": "c34cecb08549e157ccfbe8e6484d810f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\06_aggregate.py": {
+    "mtime": 1778488886.3530135,
+    "ast_hash": "c2e3d4bce0bf0e473284cf2be4bc081a",
+    "semantic_hash": "c2e3d4bce0bf0e473284cf2be4bc081a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\07_make_figures.py": {
+    "mtime": 1778488886.3545175,
+    "ast_hash": "1a7ab2033b533e35e6b0d50984fa2c39",
+    "semantic_hash": "1a7ab2033b533e35e6b0d50984fa2c39"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\08_codebook_stacking.py": {
+    "mtime": 1778675038.1810791,
+    "ast_hash": "3efacf59872e466eb66402b0a0bfe051",
+    "semantic_hash": "3efacf59872e466eb66402b0a0bfe051"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\09_aggregate_codebook.py": {
+    "mtime": 1778488886.3555224,
+    "ast_hash": "41b289ecac45906a3c20e28b02170afd",
+    "semantic_hash": "41b289ecac45906a3c20e28b02170afd"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\10_make_codebook_figure.py": {
+    "mtime": 1778488886.356522,
+    "ast_hash": "845e3bf317e7959ff35d1282d3a44820",
+    "semantic_hash": "845e3bf317e7959ff35d1282d3a44820"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\11_make_ablation_figures.py": {
+    "mtime": 1778488886.356522,
+    "ast_hash": "ab87269ce53629a0c2c4b2b2719963c2",
+    "semantic_hash": "ab87269ce53629a0c2c4b2b2719963c2"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v07_loss_budget_sweeps\\01_run_aux_sweep.py": {
+    "mtime": 1778488886.3575237,
+    "ast_hash": "6583e799c73cb5f1bb9973f72cdc7393",
+    "semantic_hash": "6583e799c73cb5f1bb9973f72cdc7393"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v07_loss_budget_sweeps\\02_run_hr_weight_sweep.py": {
+    "mtime": 1778488886.3585222,
+    "ast_hash": "51a102ef065088d57c87c2f41b0c034f",
+    "semantic_hash": "51a102ef065088d57c87c2f41b0c034f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v07_loss_budget_sweeps\\05_aggregate_aux.py": {
+    "mtime": 1778488886.3585222,
+    "ast_hash": "2b608187831a3bcf59122d6021e6cfd3",
+    "semantic_hash": "2b608187831a3bcf59122d6021e6cfd3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v07_loss_budget_sweeps\\08_make_figures.py": {
+    "mtime": 1778488886.359522,
+    "ast_hash": "2ce0644538c063ef56d06672f363b44d",
+    "semantic_hash": "2ce0644538c063ef56d06672f363b44d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\crossformer_official\\attn.py": {
+    "mtime": 1777360080.2361178,
+    "ast_hash": "23b9faad09c5d3ae557aa8951226b6ac",
+    "semantic_hash": "23b9faad09c5d3ae557aa8951226b6ac"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\crossformer_official\\cross_decoder.py": {
+    "mtime": 1777360080.2361178,
+    "ast_hash": "e8029c1cdbda444ab51f851fc6cfcfdf",
+    "semantic_hash": "e8029c1cdbda444ab51f851fc6cfcfdf"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\crossformer_official\\cross_embed.py": {
+    "mtime": 1777360080.2371178,
+    "ast_hash": "edf7f8f27e1917e6faf52c7d0b0339e3",
+    "semantic_hash": "edf7f8f27e1917e6faf52c7d0b0339e3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\crossformer_official\\cross_encoder.py": {
+    "mtime": 1777360080.2371178,
+    "ast_hash": "20c44d0e9935fe0d649cb07a3bc1fbf6",
+    "semantic_hash": "20c44d0e9935fe0d649cb07a3bc1fbf6"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\crossformer_official\\cross_former.py": {
+    "mtime": 1777360080.2381196,
+    "ast_hash": "fcd74439156277adb8cc8a6c7c037a1e",
+    "semantic_hash": "fcd74439156277adb8cc8a6c7c037a1e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\ditto_official\\ditto.py": {
+    "mtime": 1777360080.2381196,
+    "ast_hash": "6ede85a453d00b95c4df6bf000184faf",
+    "semantic_hash": "6ede85a453d00b95c4df6bf000184faf"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\ditto_official\\fedbase.py": {
+    "mtime": 1777360080.2391176,
+    "ast_hash": "30caff5aa97290c6fea0d2531e58bec6",
+    "semantic_hash": "30caff5aa97290c6fea0d2531e58bec6"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\dlinear_official\\DLinear.py": {
+    "mtime": 1777360080.2401175,
+    "ast_hash": "e903c7381fba5b4abf11beae7ac5bfff",
+    "semantic_hash": "e903c7381fba5b4abf11beae7ac5bfff"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedavg_official\\fedavg.py": {
+    "mtime": 1777360080.2411177,
+    "ast_hash": "7804ca0857cf26e4f0e02d182aaeaa04",
+    "semantic_hash": "7804ca0857cf26e4f0e02d182aaeaa04"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedavg_official\\fedbase.py": {
+    "mtime": 1777360080.2421176,
+    "ast_hash": "4677af5221930e4365083ce5eeceb7c1",
+    "semantic_hash": "4677af5221930e4365083ce5eeceb7c1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedprox_official\\fedbase.py": {
+    "mtime": 1777360080.2421176,
+    "ast_hash": "4677af5221930e4365083ce5eeceb7c1",
+    "semantic_hash": "4677af5221930e4365083ce5eeceb7c1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedprox_official\\fedprox.py": {
+    "mtime": 1777360080.2431176,
+    "ast_hash": "ef4fba36583c8c05880dfce7730e9004",
+    "semantic_hash": "ef4fba36583c8c05880dfce7730e9004"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedprox_official\\pgd.py": {
+    "mtime": 1777360080.2431176,
+    "ast_hash": "137812d407fe2497a8ac779cc0bcf215",
+    "semantic_hash": "137812d407fe2497a8ac779cc0bcf215"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedrep_official\\main_fedrep.py": {
+    "mtime": 1777360080.2441173,
+    "ast_hash": "1d180043cb82fff1d16960a4b1e1ed1f",
+    "semantic_hash": "1d180043cb82fff1d16960a4b1e1ed1f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedrep_official\\main_local.py": {
+    "mtime": 1777360080.2451196,
+    "ast_hash": "8c6bd56baa87093dff847bfae55ce0be",
+    "semantic_hash": "8c6bd56baa87093dff847bfae55ce0be"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\fedrep_official\\Update.py": {
+    "mtime": 1777360080.2441173,
+    "ast_hash": "c74fdffcb6c3c2ce3eff3ec48ecc3b7f",
+    "semantic_hash": "c74fdffcb6c3c2ce3eff3ec48ecc3b7f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\nhits_official\\nhits.py": {
+    "mtime": 1777360080.2461176,
+    "ast_hash": "f2a4acca24d93199ddd2bdddf438d296",
+    "semantic_hash": "f2a4acca24d93199ddd2bdddf438d296"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\figures\\make_pfl_figures.py": {
+    "mtime": 1777385217.9066157,
+    "ast_hash": "9d7b7f93e6b00eb4ec0d2edaa7581456",
+    "semantic_hash": "9d7b7f93e6b00eb4ec0d2edaa7581456"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\config.py": {
+    "mtime": 1777206654.0301242,
+    "ast_hash": "c8eff87b659cd49cbc3583bc9d0b2405",
+    "semantic_hash": "c8eff87b659cd49cbc3583bc9d0b2405"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\per_client_split.py": {
+    "mtime": 1778659120.5003514,
+    "ast_hash": "ce93b6db180ba70f0a4d4f265c6cc745",
+    "semantic_hash": "ce93b6db180ba70f0a4d4f265c6cc745"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\splits.py": {
+    "mtime": 1777297985.769001,
+    "ast_hash": "9ff44b4c0d0ea5a0eca88b33c58f95ea",
+    "semantic_hash": "9ff44b4c0d0ea5a0eca88b33c58f95ea"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\umass.py": {
+    "mtime": 1777297893.3356228,
+    "ast_hash": "4e7560dbc2cf2bfe04b695127ee81f22",
+    "semantic_hash": "4e7560dbc2cf2bfe04b695127ee81f22"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\umass_calendar.py": {
+    "mtime": 1777212939.0242343,
+    "ast_hash": "cb9c2382e50c723e86957a2ff482c7fa",
+    "semantic_hash": "cb9c2382e50c723e86957a2ff482c7fa"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\umass_weather.py": {
+    "mtime": 1777220524.9913118,
+    "ast_hash": "17a4ded3b1f92b36b734b6df637bf8d1",
+    "semantic_hash": "17a4ded3b1f92b36b734b6df637bf8d1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\dataloader\\__init__.py": {
+    "mtime": 1777297845.9099562,
+    "ast_hash": "9aeed3ceacc85dcbf4ceda48cb8a12da",
+    "semantic_hash": "9aeed3ceacc85dcbf4ceda48cb8a12da"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\eval\\cold_helpers.py": {
+    "mtime": 1777360080.2541175,
+    "ast_hash": "be9d64825fef3dbb8d4cb95df444e4eb",
+    "semantic_hash": "be9d64825fef3dbb8d4cb95df444e4eb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\eval\\__init__.py": {
+    "mtime": 1777360080.2541175,
+    "ast_hash": "2b3941d580f25ae92ac82381f1c5b2b9",
+    "semantic_hash": "2b3941d580f25ae92ac82381f1c5b2b9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\base.py": {
+    "mtime": 1777360080.255118,
+    "ast_hash": "ef2bbcf7093ed081c7ceffd28780e683",
+    "semantic_hash": "ef2bbcf7093ed081c7ceffd28780e683"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\centralised_pooled.py": {
+    "mtime": 1778488886.381348,
+    "ast_hash": "536dc3f6d4bbe3c97bba108f86b6015f",
+    "semantic_hash": "536dc3f6d4bbe3c97bba108f86b6015f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\codebook_fl.py": {
+    "mtime": 1778488886.382347,
+    "ast_hash": "b3b297ef7a45ce7dfab1e49c98e8f810",
+    "semantic_hash": "b3b297ef7a45ce7dfab1e49c98e8f810"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\ditto.py": {
+    "mtime": 1777360080.2561176,
+    "ast_hash": "0ffbbf6c5138a8e38d602ab9de4dcf14",
+    "semantic_hash": "0ffbbf6c5138a8e38d602ab9de4dcf14"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\fedavg.py": {
+    "mtime": 1777360080.2561176,
+    "ast_hash": "8b97cfd135a2e849d27ba9bec82b3e4c",
+    "semantic_hash": "8b97cfd135a2e849d27ba9bec82b3e4c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\fedavg_aux.py": {
+    "mtime": 1777477653.5131543,
+    "ast_hash": "ea2e30a0ad4f148d5db6b2afa725bd18",
+    "semantic_hash": "ea2e30a0ad4f148d5db6b2afa725bd18"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\fedproto.py": {
+    "mtime": 1777360185.6342702,
+    "ast_hash": "8101755f3d6da662b397eaf0e93fe8fb",
+    "semantic_hash": "8101755f3d6da662b397eaf0e93fe8fb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\fedprox.py": {
+    "mtime": 1777360080.2571194,
+    "ast_hash": "6a21606995081709dfebda79df664942",
+    "semantic_hash": "6a21606995081709dfebda79df664942"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\fedrep.py": {
+    "mtime": 1777360080.2571194,
+    "ast_hash": "dd2849fbf52814123a12617e66036b71",
+    "semantic_hash": "dd2849fbf52814123a12617e66036b71"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\local_only.py": {
+    "mtime": 1777360080.2581184,
+    "ast_hash": "3702c0be574f0fc85dab680a832b31be",
+    "semantic_hash": "3702c0be574f0fc85dab680a832b31be"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\round_aux.py": {
+    "mtime": 1778659120.5013525,
+    "ast_hash": "42eb60586260f018c91643ed577b9f62",
+    "semantic_hash": "42eb60586260f018c91643ed577b9f62"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\round_logger.py": {
+    "mtime": 1778659120.502351,
+    "ast_hash": "be002734150ac4bd246171285249039e",
+    "semantic_hash": "be002734150ac4bd246171285249039e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fl\\__init__.py": {
+    "mtime": 1777360185.633268,
+    "ast_hash": "eac4419e677eba50d86b49ee2ebe52bc",
+    "semantic_hash": "eac4419e677eba50d86b49ee2ebe52bc"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fm\\chronos.py": {
+    "mtime": 1777360080.2591188,
+    "ast_hash": "8a9bdfbf55a0c29bffe4a88c88a2d68e",
+    "semantic_hash": "8a9bdfbf55a0c29bffe4a88c88a2d68e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fm\\timesfm.py": {
+    "mtime": 1777360080.2591188,
+    "ast_hash": "6243542aa4e8e8a70076bdafe7d20f2c",
+    "semantic_hash": "6243542aa4e8e8a70076bdafe7d20f2c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\fm\\__init__.py": {
+    "mtime": 1777360080.2581184,
+    "ast_hash": "efe96de329c487db81d3759299defc40",
+    "semantic_hash": "efe96de329c487db81d3759299defc40"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\crossformer.py": {
+    "mtime": 1777360080.260118,
+    "ast_hash": "f71da1feb63532f91dd8fed42b39a521",
+    "semantic_hash": "f71da1feb63532f91dd8fed42b39a521"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\dlinear.py": {
+    "mtime": 1777360080.260118,
+    "ast_hash": "7832deb5be7b6a4839a5cc3f4f67545f",
+    "semantic_hash": "7832deb5be7b6a4839a5cc3f4f67545f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\nbeatsx.py": {
+    "mtime": 1777206313.2152853,
+    "ast_hash": "5a4914063cb6be25cc9ca242b16d2ba0",
+    "semantic_hash": "5a4914063cb6be25cc9ca242b16d2ba0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\nbeatsx_aux.py": {
+    "mtime": 1777208840.9628813,
+    "ast_hash": "3231e52e6c87653b2f75dd25297e2a3d",
+    "semantic_hash": "3231e52e6c87653b2f75dd25297e2a3d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\nbeatsx_calendar.py": {
+    "mtime": 1777212963.820641,
+    "ast_hash": "0e501e651000591485e16dc03a0b3fd3",
+    "semantic_hash": "0e501e651000591485e16dc03a0b3fd3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\nbeatsx_vq.py": {
+    "mtime": 1777206472.639215,
+    "ast_hash": "3690d1f6ea883890e7bc070c3b6fd895",
+    "semantic_hash": "3690d1f6ea883890e7bc070c3b6fd895"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\nhits.py": {
+    "mtime": 1777360080.2611172,
+    "ast_hash": "7973700bde539cd2cab88eee6e0f658a",
+    "semantic_hash": "7973700bde539cd2cab88eee6e0f658a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\peak_aux_head.py": {
+    "mtime": 1777208830.0409656,
+    "ast_hash": "9ebf1292a18ba36c8e3033c9a3f59717",
+    "semantic_hash": "9ebf1292a18ba36c8e3033c9a3f59717"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\vector_quantizer.py": {
+    "mtime": 1777206448.7432373,
+    "ast_hash": "d6ce17af40aea410a985fa95865ff731",
+    "semantic_hash": "d6ce17af40aea410a985fa95865ff731"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\vq_kmeans.py": {
+    "mtime": 1777208855.004516,
+    "ast_hash": "adf0564a64707a7297cb2505b46fad30",
+    "semantic_hash": "adf0564a64707a7297cb2505b46fad30"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\models\\__init__.py": {
+    "mtime": 1777208890.7140317,
+    "ast_hash": "d33df8caa8618b20c26f07b2b39037f8",
+    "semantic_hash": "d33df8caa8618b20c26f07b2b39037f8"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\probes\\peak_descriptor.py": {
+    "mtime": 1777208867.9891534,
+    "ast_hash": "49721dc10cf09a99bb6eac5563292f35",
+    "semantic_hash": "49721dc10cf09a99bb6eac5563292f35"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\probes\\__init__.py": {
+    "mtime": 1777208858.9265554,
+    "ast_hash": "8f16dade8919f958fcb07c303b1089f9",
+    "semantic_hash": "8f16dade8919f958fcb07c303b1089f9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\utils\\metrics.py": {
+    "mtime": 1777206423.0312312,
+    "ast_hash": "3fb96396658425d27866804feadbc00b",
+    "semantic_hash": "3fb96396658425d27866804feadbc00b"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\src\\utils\\__init__.py": {
+    "mtime": 1777206404.7908592,
+    "ast_hash": "7dbf52a6b28bc4784f01363cb9af915c",
+    "semantic_hash": "7dbf52a6b28bc4784f01363cb9af915c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_centralised_pooled.py": {
+    "mtime": 1778488886.3843474,
+    "ast_hash": "2d958cf6133632b6f2cd9864fa991f78",
+    "semantic_hash": "2d958cf6133632b6f2cd9864fa991f78"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_codebook_fl.py": {
+    "mtime": 1777447873.9926212,
+    "ast_hash": "f83366e77dba6dfc7cf5390b0366ade3",
+    "semantic_hash": "f83366e77dba6dfc7cf5390b0366ade3"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_fedavg_aux.py": {
+    "mtime": 1777477696.5776343,
+    "ast_hash": "38e22de279befd7f4bcd42f854bb7b42",
+    "semantic_hash": "38e22de279befd7f4bcd42f854bb7b42"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_per_client_split.py": {
+    "mtime": 1778488886.3843474,
+    "ast_hash": "56bef7256e0f05139dd87e9b075a7ea7",
+    "semantic_hash": "56bef7256e0f05139dd87e9b075a7ea7"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_round_logger.py": {
+    "mtime": 1778659120.5033536,
+    "ast_hash": "b5173187746a23d88616528b0e2e488d",
+    "semantic_hash": "b5173187746a23d88616528b0e2e488d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_v06_codebook_stacking.py": {
+    "mtime": 1778488886.3853471,
+    "ast_hash": "085d6380a7aab7a20dbe5af4712f1da0",
+    "semantic_hash": "085d6380a7aab7a20dbe5af4712f1da0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_v06_drivers_naming.py": {
+    "mtime": 1778488886.3853471,
+    "ast_hash": "bab7fd3546a15642a8ab7c1223711373",
+    "semantic_hash": "bab7fd3546a15642a8ab7c1223711373"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_v07_aux_sweep.py": {
+    "mtime": 1778488886.3863468,
+    "ast_hash": "60a4ecd7bf8f5cd02ea9d6ff57b81035",
+    "semantic_hash": "60a4ecd7bf8f5cd02ea9d6ff57b81035"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\test_v07_hr_weight_sweep.py": {
+    "mtime": 1778659120.5033536,
+    "ast_hash": "6c9a5e4e6bcbd56b4115c63eabb1f71d",
+    "semantic_hash": "6c9a5e4e6bcbd56b4115c63eabb1f71d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\tests\\__init__.py": {
+    "mtime": 1777447826.6035402,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\README.md": {
+    "mtime": 1778737242.5998816,
+    "ast_hash": "e55fc6524d3a7e2f86ba02cb0263c914",
+    "semantic_hash": "e55fc6524d3a7e2f86ba02cb0263c914"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\scratch_daily_peak_periodicity\\README.md": {
+    "mtime": 1777437069.2696662,
+    "ast_hash": "260a835d2c03ad272ecd4bc4b4883ad9",
+    "semantic_hash": "260a835d2c03ad272ecd4bc4b4883ad9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v02_fl_8020_ratio\\README.md": {
+    "mtime": 1777305472.6496449,
+    "ast_hash": "a97bb75cf421955727d817232abb710e",
+    "semantic_hash": "a97bb75cf421955727d817232abb710e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v03_kshot_pfl\\README.md": {
+    "mtime": 1777284943.5144138,
+    "ast_hash": "641245a3d8f53d57eb6fcfaf7c33ca90",
+    "semantic_hash": "641245a3d8f53d57eb6fcfaf7c33ca90"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\README.md": {
+    "mtime": 1777360080.233118,
+    "ast_hash": "d416bb5fe9759f6840fe52e46af615ad",
+    "semantic_hash": "d416bb5fe9759f6840fe52e46af615ad"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v04_full_baseline_comparison\\09_fix_rerun\\README.md": {
+    "mtime": 1777360185.633268,
+    "ast_hash": "660ababda6bfb58a7886ac82c84bb35f",
+    "semantic_hash": "660ababda6bfb58a7886ac82c84bb35f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v05_fedcb_codebook\\README.md": {
+    "mtime": 1777460144.5967774,
+    "ast_hash": "1be70fec9aa19bd1a1a1dff01cd75606",
+    "semantic_hash": "1be70fec9aa19bd1a1a1dff01cd75606"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v06_round_dynamics\\Readme.md": {
+    "mtime": 1778488886.3575237,
+    "ast_hash": "54b110b5b7b95412ff28d333a08218c5",
+    "semantic_hash": "54b110b5b7b95412ff28d333a08218c5"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\experiments\\v07_loss_budget_sweeps\\Readme.md": {
+    "mtime": 1778659120.496351,
+    "ast_hash": "8e8f69580aef8e4674864c7550e752af",
+    "semantic_hash": "8e8f69580aef8e4674864c7550e752af"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\README.md": {
+    "mtime": 1778488886.360522,
+    "ast_hash": "6cca047f8d5d8fa003fdbc45fed364b6",
+    "semantic_hash": "6cca047f8d5d8fa003fdbc45fed364b6"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\conference_draft\\presentation.md": {
+    "mtime": 1777467504.891726,
+    "ast_hash": "635fc1545045e59d97af82c20ecf535c",
+    "semantic_hash": "635fc1545045e59d97af82c20ecf535c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\nbeatsx_2104_05522.md": {
+    "mtime": 1778488886.3615227,
+    "ast_hash": "dbc17c6b59138e73f9f1833655113dbb",
+    "semantic_hash": "dbc17c6b59138e73f9f1833655113dbb"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\nbeats_1905_10437.md": {
+    "mtime": 1778488886.360522,
+    "ast_hash": "6bf7d114b04c87f204e688b1d0f5a078",
+    "semantic_hash": "6bf7d114b04c87f204e688b1d0f5a078"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\vqvae_1711_00937.md": {
+    "mtime": 1778832681.6488514,
+    "ast_hash": "5b3d7f17397e4aadf609df3180926790",
+    "semantic_hash": "5b3d7f17397e4aadf609df3180926790"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\paper.md": {
+    "mtime": 1777385217.9076161,
+    "ast_hash": "e02aa80aef8ccd1d73445ac6576c0641",
+    "semantic_hash": "e02aa80aef8ccd1d73445ac6576c0641"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\README.md": {
+    "mtime": 1777278875.2345052,
+    "ast_hash": "6c6f36f61424cfc847300263178d6daf",
+    "semantic_hash": "6c6f36f61424cfc847300263178d6daf"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\v01_peak_vq.md": {
+    "mtime": 1777277857.5644646,
+    "ast_hash": "caa70228d26b1f7098148b9564d5d02c",
+    "semantic_hash": "caa70228d26b1f7098148b9564d5d02c"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\v04_full_baseline_comparison.md": {
+    "mtime": 1777360080.2531195,
+    "ast_hash": "3b9bd22ff6cf5a3819cbc0d6ff72bbf1",
+    "semantic_hash": "3b9bd22ff6cf5a3819cbc0d6ff72bbf1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v05_draft\\EXPERIMENT_LOG.md": {
+    "mtime": 1777449498.4781165,
+    "ast_hash": "06508a8ab09f711fbf5101363fcfad38",
+    "semantic_hash": "06508a8ab09f711fbf5101363fcfad38"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v05_draft\\presentation_tables.md": {
+    "mtime": 1777460094.3763928,
+    "ast_hash": "d9db0920691c2657b90831569e3a34b9",
+    "semantic_hash": "d9db0920691c2657b90831569e3a34b9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v05_draft\\v05_fedcb_codebook.md": {
+    "mtime": 1777449448.1392865,
+    "ast_hash": "1835a250db492898baad23687a609f07",
+    "semantic_hash": "1835a250db492898baad23687a609f07"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\README.md": {
+    "mtime": 1778488886.3615227,
+    "ast_hash": "7d111725e728022ba40db35be9a61744",
+    "semantic_hash": "7d111725e728022ba40db35be9a61744"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\v06_round_dynamics.md": {
+    "mtime": 1778659120.4973526,
+    "ast_hash": "df575e0e0980f3f80f28436944b6c177",
+    "semantic_hash": "df575e0e0980f3f80f28436944b6c177"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v07_draft\\README.md": {
+    "mtime": 1778488886.3753488,
+    "ast_hash": "47d15d1c8e74fe015ddeafb592363368",
+    "semantic_hash": "47d15d1c8e74fe015ddeafb592363368"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v07_draft\\v07_loss_weight_sensitivity.md": {
+    "mtime": 1778659120.4983513,
+    "ast_hash": "123eb5a9fec2aacbed4c42ac27352623",
+    "semantic_hash": "123eb5a9fec2aacbed4c42ac27352623"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v01-01_peak_from_latent_test.md": {
+    "mtime": 1777273764.826788,
+    "ast_hash": "4f3ea5a2a337b68648aa15377b37201b",
+    "semantic_hash": "4f3ea5a2a337b68648aa15377b37201b"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v03-01_kshot_pfl.md": {
+    "mtime": 1777284930.474888,
+    "ast_hash": "1bd2dff228ad44f12420ca37a2ff8206",
+    "semantic_hash": "1bd2dff228ad44f12420ca37a2ff8206"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v04-01_full_baseline_comparison.md": {
+    "mtime": 1777360080.2531195,
+    "ast_hash": "5d2d64fcafd2d3ef358221ea46b84f64",
+    "semantic_hash": "5d2d64fcafd2d3ef358221ea46b84f64"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v05-01_fedcb_codebook.md": {
+    "mtime": 1777447986.7630315,
+    "ast_hash": "80958a68ebf82913d93cb192c0c59de1",
+    "semantic_hash": "80958a68ebf82913d93cb192c0c59de1"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v06-01_round_dynamics.md": {
+    "mtime": 1778659120.499351,
+    "ast_hash": "92055b36de59a47c93b912d769e46045",
+    "semantic_hash": "92055b36de59a47c93b912d769e46045"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v07-01_loss_and_budget_sweeps.md": {
+    "mtime": 1778671000.0275102,
+    "ast_hash": "aea388c67b64999205ab3c697a2cfa8f",
+    "semantic_hash": "aea388c67b64999205ab3c697a2cfa8f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\docs\\fl_methodologies_fedsgd_vs_fedavg.md": {
+    "mtime": 1778577547.5177724,
+    "ast_hash": "d919c09d633b0c0e3a382a9dd6006d6f",
+    "semantic_hash": "d919c09d633b0c0e3a382a9dd6006d6f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\docs\\v06_v07_crosscheck_audit.md": {
+    "mtime": 1778573627.9251888,
+    "ast_hash": "6fd5b3b397f134f181fcd5dc24becaa1",
+    "semantic_hash": "6fd5b3b397f134f181fcd5dc24becaa1"
+  },
+  "CLAUDE.md": {
+    "mtime": 1778993336.6632235,
+    "ast_hash": "524a14eab5b590903509cbc1c8a5902c",
+    "semantic_hash": "524a14eab5b590903509cbc1c8a5902c"
+  },
+  "CLAUDE_old.md": {
+    "mtime": 1778836137.6931984,
+    "ast_hash": "e841ee967d3f6275be951ca5d459d8a2",
+    "semantic_hash": "e841ee967d3f6275be951ca5d459d8a2"
+  },
+  "DESIGN.md": {
+    "mtime": 1777480246.2422519,
+    "ast_hash": "f27d54fa22b41a26cf958b49b247a704",
+    "semantic_hash": "f27d54fa22b41a26cf958b49b247a704"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\dlinear_2205_13504.md": {
+    "mtime": 1777360080.2401175,
+    "ast_hash": "569b5b5c3f4c11a98d3fa7f2ef5067e0",
+    "semantic_hash": "569b5b5c3f4c11a98d3fa7f2ef5067e0"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\literlature\\nhits_2201_12886.md": {
+    "mtime": 1777360080.2461176,
+    "ast_hash": "9a7b90b6cddd173dc930b434e077951d",
+    "semantic_hash": "9a7b90b6cddd173dc930b434e077951d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\v02_fl_8020_ratio.md": {
+    "mtime": 1777305419.8369412,
+    "ast_hash": "9ffa8981d2031e12c7311ae3bacf2127",
+    "semantic_hash": "9ffa8981d2031e12c7311ae3bacf2127"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\plans\\v02-01_fl_8020_ratio.md": {
+    "mtime": 1777305443.0697987,
+    "ast_hash": "55393be12d4dd355f9714696f87d513e",
+    "semantic_hash": "55393be12d4dd355f9714696f87d513e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\figures\\F1_pareto_unified.png": {
+    "mtime": 1777385217.9026177,
+    "ast_hash": "bf1bb80900bd47475b0bf9af2145f630",
+    "semantic_hash": "bf1bb80900bd47475b0bf9af2145f630"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\figures\\F6_decomposition.png": {
+    "mtime": 1777385217.9036145,
+    "ast_hash": "47e2b4577d9a64947a6b537e12f9bd9f",
+    "semantic_hash": "47e2b4577d9a64947a6b537e12f9bd9f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\figures\\F7_m_sensitivity.png": {
+    "mtime": 1777385217.9046154,
+    "ast_hash": "37b67ca6ca7f49e16f9cf7b0b4fa46b4",
+    "semantic_hash": "37b67ca6ca7f49e16f9cf7b0b4fa46b4"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\pfl_unified\\figures\\F8_sorted_unified.png": {
+    "mtime": 1777385217.9066157,
+    "ast_hash": "5fba06b6dd4435d48196697f92639319",
+    "semantic_hash": "5fba06b6dd4435d48196697f92639319"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F0_architecture.png": {
+    "mtime": 1777274409.188076,
+    "ast_hash": "54c8685672aaa9523558d6ed0a9371d9",
+    "semantic_hash": "54c8685672aaa9523558d6ed0a9371d9"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F1_ablation_e1.png": {
+    "mtime": 1777274409.275077,
+    "ast_hash": "4c6e862b8f14bc36acc6e890a03c2a2e",
+    "semantic_hash": "4c6e862b8f14bc36acc6e890a03c2a2e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F2_multiseed_e3.png": {
+    "mtime": 1777274409.3750768,
+    "ast_hash": "5954e6c769bec2f7b83c229b2b336144",
+    "semantic_hash": "5954e6c769bec2f7b83c229b2b336144"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F3_arms_pareto.png": {
+    "mtime": 1777274409.474077,
+    "ast_hash": "9fbcbfe320545e1c697426f4add036af",
+    "semantic_hash": "9fbcbfe320545e1c697426f4add036af"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F4_cluster_benefit.png": {
+    "mtime": 1777274409.475078,
+    "ast_hash": "2bde37e3cc4bac123b50e03451159b48",
+    "semantic_hash": "2bde37e3cc4bac123b50e03451159b48"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F5_training_curves.png": {
+    "mtime": 1777274409.6070757,
+    "ast_hash": "cfe35f3e28ed9f5daff52908d4e80559",
+    "semantic_hash": "cfe35f3e28ed9f5daff52908d4e80559"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v01_draft\\figures\\F6_peak_hour_dist.png": {
+    "mtime": 1777274409.608076,
+    "ast_hash": "30f2a40949fc765cbb9b4637bd8c5d11",
+    "semantic_hash": "30f2a40949fc765cbb9b4637bd8c5d11"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F0_architecture.png": {
+    "mtime": 1777305479.9545143,
+    "ast_hash": "f50659ae2dbe7651ba7ea0b2efd31a08",
+    "semantic_hash": "f50659ae2dbe7651ba7ea0b2efd31a08"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F1_8020_vs_5050.png": {
+    "mtime": 1777305480.084485,
+    "ast_hash": "3487fd29fd193d4f51c9da9175308a72",
+    "semantic_hash": "3487fd29fd193d4f51c9da9175308a72"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F2_routing_R0_R1.png": {
+    "mtime": 1777305480.1827576,
+    "ast_hash": "10dd427a3aeb1eebc2e0a261986333e7",
+    "semantic_hash": "10dd427a3aeb1eebc2e0a261986333e7"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F3_E1_peak_aux.png": {
+    "mtime": 1777305480.235211,
+    "ast_hash": "db2aca5e7a398907e26b0f6a26541573",
+    "semantic_hash": "db2aca5e7a398907e26b0f6a26541573"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F4_W_components.png": {
+    "mtime": 1777305480.332891,
+    "ast_hash": "a636d438fecf8777a4b025f07e010652",
+    "semantic_hash": "a636d438fecf8777a4b025f07e010652"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v02_draft\\figures\\v02_F5_codebook_health.png": {
+    "mtime": 1777305480.4529521,
+    "ast_hash": "fd2bb2356020b16d40954ae28cba286d",
+    "semantic_hash": "fd2bb2356020b16d40954ae28cba286d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\figures\\v04_F1_pareto.png": {
+    "mtime": 1777360080.2491176,
+    "ast_hash": "6138b683f2cd11ad08a4d47a82702143",
+    "semantic_hash": "6138b683f2cd11ad08a4d47a82702143"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\figures\\v04_F2_g5_cross_cell.png": {
+    "mtime": 1777360080.2501178,
+    "ast_hash": "0e4a56f35b9e9d2fe1818a8860164953",
+    "semantic_hash": "0e4a56f35b9e9d2fe1818a8860164953"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\figures\\v04_F3_nf_fm_vs_trained.png": {
+    "mtime": 1777360080.2511177,
+    "ast_hash": "44b5a76519622b542b3fd9c10867d993",
+    "semantic_hash": "44b5a76519622b542b3fd9c10867d993"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\figures\\v04_F4_heterogeneity.png": {
+    "mtime": 1777360080.25212,
+    "ast_hash": "7f5e27210cf9f761709d2816f96ecd93",
+    "semantic_hash": "7f5e27210cf9f761709d2816f96ecd93"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v04_draft\\figures\\v04_F5_communication.png": {
+    "mtime": 1777360080.25212,
+    "ast_hash": "beafd1af13f92314bacc1d0f9e61c590",
+    "semantic_hash": "beafd1af13f92314bacc1d0f9e61c590"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F1b_round_vs_test_pape.png": {
+    "mtime": 1778488886.364832,
+    "ast_hash": "d8e4599a6ef96b824646d09adc7b4f4f",
+    "semantic_hash": "d8e4599a6ef96b824646d09adc7b4f4f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F1c_round_vs_train_loss.png": {
+    "mtime": 1778488886.3658314,
+    "ast_hash": "354d781260871695c046a91c1613f0ae",
+    "semantic_hash": "354d781260871695c046a91c1613f0ae"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F1_round_vs_val_pape.png": {
+    "mtime": 1778488886.3635223,
+    "ast_hash": "2c0c96acf418a3c95b5bdaa34b8bf893",
+    "semantic_hash": "2c0c96acf418a3c95b5bdaa34b8bf893"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F2_bytes_vs_val_pape.png": {
+    "mtime": 1778488886.3668313,
+    "ast_hash": "40d32a02fac6b94c298ab6ba47c6be2d",
+    "semantic_hash": "40d32a02fac6b94c298ab6ba47c6be2d"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F3_drift_vs_round.png": {
+    "mtime": 1778488886.3678315,
+    "ast_hash": "b2601c70e71565750e5cd1191bb1e08e",
+    "semantic_hash": "b2601c70e71565750e5cd1191bb1e08e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F4_round_vs_test_pape_MAEonly.png": {
+    "mtime": 1778488886.3688316,
+    "ast_hash": "f3aa88893106024e7ac1ca2d3f942eb8",
+    "semantic_hash": "f3aa88893106024e7ac1ca2d3f942eb8"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F5_round_vs_train_loss_MAEonly.png": {
+    "mtime": 1778488886.3698313,
+    "ast_hash": "cbbf9783041b0f9ac67885840db04821",
+    "semantic_hash": "cbbf9783041b0f9ac67885840db04821"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F6_codebook_lift.png": {
+    "mtime": 1778488886.371336,
+    "ast_hash": "d739e3fae6708f3dc63286460d69ae9f",
+    "semantic_hash": "d739e3fae6708f3dc63286460d69ae9f"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F7_alpha_pareto.png": {
+    "mtime": 1778488886.3723433,
+    "ast_hash": "c7b38779aad973890c1bacde856acc4e",
+    "semantic_hash": "c7b38779aad973890c1bacde856acc4e"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v06_draft\\figures\\F8_klocal_sweep.png": {
+    "mtime": 1778488886.373347,
+    "ast_hash": "200d65eb49ebadc6553e0b73b6d52217",
+    "semantic_hash": "200d65eb49ebadc6553e0b73b6d52217"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v07_draft\\figures\\F-aux.png": {
+    "mtime": 1778488886.3763502,
+    "ast_hash": "8e61dc30295273ae59cec39acfa3bc1a",
+    "semantic_hash": "8e61dc30295273ae59cec39acfa3bc1a"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v07_draft\\figures\\F-codebook-vs-lambda.png": {
+    "mtime": 1778488886.3773482,
+    "ast_hash": "d9a8fd65907814329c1f88a90bdd5c6b",
+    "semantic_hash": "d9a8fd65907814329c1f88a90bdd5c6b"
+  },
+  "C:\\Users\\HOME\\JW\\Research Docs\\FL_Peak_Project\\papers\\v07_draft\\figures\\F-hr.png": {
+    "mtime": 1778488886.3783472,
+    "ast_hash": "30f3eb2879236bbb336bd2cccc41cbd7",
+    "semantic_hash": "30f3eb2879236bbb336bd2cccc41cbd7"
+  }
+}
