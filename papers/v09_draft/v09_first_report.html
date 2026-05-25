@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>v09 1차 보고서 — 라운드 단위 federated codebook</title>
+<script src="https://cdn.plot.ly/plotly-2.27.1.min.js"></script>
+<style>
+  :root {
+    --fg: #1a1a2e;
+    --muted: #6c757d;
+    --rule: #d9d9d9;
+    --bg: #ffffff;
+    --bg-soft: #f7f9fb;
+    --accent: #2c3e50;
+    --best: #c0392b;
+    --good: #27ae60;
+    --warn: #e67e22;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Malgun Gothic","Apple SD Gothic Neo",-apple-system,"Segoe UI",Roboto,sans-serif;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    color: var(--fg);
+    line-height: 1.6;
+    font-size: 15px;
+    background: var(--bg);
+  }
+  h1 { font-size: 1.7em; margin: 0 0 6px; }
+  h2 { font-size: 1.25em; margin-top: 36px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+  h3 { font-size: 1.05em; margin-top: 22px; }
+  .meta { color: var(--muted); font-size: 0.88em; margin-bottom: 24px; }
+  .hero {
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0 22px;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    margin-top: 14px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 0.82em;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .chart {
+    width: 100%;
+    height: 420px;
+    margin: 12px 0 8px;
+  }
+  .chart-narrow { height: 320px; }
+  .caption {
+    color: var(--muted);
+    font-size: 0.85em;
+    text-align: center;
+    margin: 2px 0 18px;
+  }
+  .controls {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 8px 0 6px;
+    font-size: 0.9em;
+  }
+  .control-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  button.btn {
+    background: #fff;
+    border: 1px solid var(--rule);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+  }
+  button.btn:hover { background: var(--bg-soft); }
+  button.btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid var(--rule);
+    padding: 7px 10px;
+    text-align: right;
+  }
+  th {
+    background: var(--bg-soft);
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+  th.sortable::after { content: " ⇅"; color: #aaa; font-size: 0.85em; }
+  th.sort-asc::after { content: " ↑"; color: var(--accent); }
+  th.sort-desc::after { content: " ↓"; color: var(--accent); }
+  td:first-child, th:first-child { text-align: left; font-weight: 500; }
+  tr.row-best { background: #fff8ef; }
+  td.delta-neg { color: var(--good); font-weight: 600; }
+  td.delta-pos { color: var(--warn); font-weight: 600; }
+  .key-result {
+    background: #eaf6e1;
+    border-left: 4px solid var(--good);
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .caveat {
+    background: #fff8e1;
+    border-left: 4px solid #f1c40f;
+    padding: 10px 14px;
+    margin: 14px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  code {
+    background: #f3f3f3;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.88em;
+    font-family: "Consolas", monospace;
+  }
+  pre code {
+    display: block;
+    padding: 10px 14px;
+    overflow-x: auto;
+    line-height: 1.5;
+    font-size: 0.85em;
+  }
+  blockquote {
+    border-left: 3px solid #bbb;
+    margin: 12px 0;
+    padding: 4px 14px;
+    color: #555;
+    font-style: italic;
+  }
+  /* SVG schematic */
+  .schematic {
+    width: 100%;
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 12px;
+    margin: 14px 0;
+  }
+  .schematic-row { stroke: none; }
+  .bb-box { fill: #cfe2f3; stroke: #1f77b4; stroke-width: 0.8; }
+  .cb-box { fill: #f4cccc; stroke: #d62728; stroke-width: 0.8; }
+  .box-text { font-size: 9px; text-anchor: middle; dominant-baseline: middle; }
+  .row-label { font-size: 11px; font-weight: 600; fill: var(--fg); }
+  .row-sub { font-size: 9px; fill: var(--muted); }
+  .schematic-hover-info {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85em;
+    margin-top: 4px;
+  }
+  .bb-box.hl, .cb-box.hl { stroke-width: 2; }
+  .arrow { stroke: #888; stroke-width: 0.7; fill: none; marker-end: url(#arr); }
+  .footer {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+
+<h1>v09 1차 보고서 — 라운드 단위 federated codebook</h1>
+<p class="meta">작성: 2026-05-18 · seed=42 × 5 FL algos × R=10 single-seed sweep · v06 phase 2 baseline 비교</p>
+
+<div class="hero">
+<strong>한 줄 결과.</strong> v06 phase 2의 federated codebook fit을 매 라운드 반복하면, R=10 E=5 (50 epoch) backbone에서도 v06 phase 2 (R=20 E=40, 800 epoch) 1-shot과 거의 같은 lift를 얻는다. <strong>codebook lift는 backbone 학습량에 둔감.</strong>
+<div class="hero-stats">
+  <div class="stat"><div class="stat-value" style="color:#c0392b">-6.42</div><div class="stat-label">Ditto R10 ΔPAPE (v09 best)</div></div>
+  <div class="stat"><div class="stat-value">-5.88</div><div class="stat-label">Ditto v06 phase 2 ΔPAPE</div></div>
+  <div class="stat"><div class="stat-value">+0.32</div><div class="stat-label">avg (v09 - v06) PAPE 차이</div></div>
+  <div class="stat"><div class="stat-value">1.000</div><div class="stat-label">codebook utilization (전 라운드)</div></div>
+</div>
+</div>
+
+<h2>1. 동기 — v06 paper limitation §4 닫기</h2>
+<blockquote>"라운드 trajectory codebook은 후속 연구로 남깁니다. Codebook lift가 backbone 라운드 수에 따라 monotonic하게 자라는지 또는 조기에 plateau하는지는 intermediate checkpointing이 필요한 별도 실험입니다."</blockquote>
+<p>v06 phase 2의 federated codebook fit을 backbone 학습 종료 후 1회가 아니라 <strong>매 라운드 끝에 1회씩</strong> 실행하여 lift trajectory를 관찰. 본 보고서는 single seed (=42) × 5 FL algos × R=10에서의 trajectory 1차 결과.</p>
+
+<h2>2. 실험 구조 (interactive schematic)</h2>
+<div class="schematic">
+  <svg id="schemSVG" viewBox="0 0 1080 200" style="width:100%; height:auto; display:block;">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#888"/>
+      </marker>
+    </defs>
+
+    <!-- Row labels -->
+    <text x="10" y="32" class="row-label">v06 phase 1</text>
+    <text x="10" y="46" class="row-sub">backbone only</text>
+    <text x="10" y="92" class="row-label">v06 phase 2</text>
+    <text x="10" y="106" class="row-sub">post-hoc 1x</text>
+    <text x="10" y="152" class="row-label">v09 03</text>
+    <text x="10" y="166" class="row-sub">post-hoc per round</text>
+
+    <!-- v06 phase 1: 20 backbone boxes -->
+    <g id="row-p1"></g>
+    <!-- v06 phase 2: one CB box at round 20 -->
+    <g id="row-p2"></g>
+    <!-- v09: 10 BB + 10 CB -->
+    <g id="row-v09bb"></g>
+    <g id="row-v09cb"></g>
+    <g id="row-v09arr"></g>
+
+    <!-- Legend -->
+    <g transform="translate(820, 22)">
+      <rect x="0" y="0" width="14" height="10" class="bb-box"/>
+      <text x="18" y="9" style="font-size:10px;">BB = backbone FL round</text>
+      <rect x="0" y="16" width="14" height="10" class="cb-box"/>
+      <text x="18" y="25" style="font-size:10px;">CB = federated KMeans fit</text>
+    </g>
+  </svg>
+  <div class="schematic-hover-info" id="schemInfo">Round box에 hover하면 그 라운드의 lift 정보가 표시됩니다 (v09 03 라인).</div>
+</div>
+
+<h2>3. R10 final-fit 비교 (sortable)</h2>
+<p>표 헤더 클릭으로 정렬. 행 클릭으로 강조.</p>
+<table id="r10table">
+  <thead>
+    <tr>
+      <th>algo</th>
+      <th class="sortable">pape_before</th>
+      <th class="sortable">pape_after</th>
+      <th class="sortable">Δpape</th>
+      <th class="sortable">utilization</th>
+      <th class="sortable">perplexity</th>
+    </tr>
+  </thead>
+  <tbody id="r10tbody"></tbody>
+</table>
+
+<h2>4. v06 phase 2 vs v09 R10 (학습량 16배 차이)</h2>
+<div id="chart_compare" class="chart chart-narrow"></div>
+<p class="caption">v06 phase 2 (R=20 E=40 = 800 epoch backbone)와 v09 R10 (R=10 E=5 = 50 epoch backbone)의 ΔPAPE 비교. backbone 학습량 16배 차이에도 lift는 ±0.5 PAPE 안.</p>
+
+<div class="key-result">
+<strong>같은 algorithm ranking, 거의 같은 lift 크기.</strong> Ditto가 양쪽 모두 best. v06 paper §6의 결론 <em>"codebook lift는 알고리즘 종류에 둔감 (1.4 PAPE 이내)"</em>가 R=10 영역에서도 그대로.
+</div>
+
+<h2>5. 5 algos Δpape trajectory (interactive)</h2>
+<div class="controls">
+  <div class="control-group">
+    <span>Algo:</span>
+    <button class="btn active" data-toggle-algo="FedAvg" style="border-bottom:3px solid #1f77b4">FedAvg</button>
+    <button class="btn active" data-toggle-algo="FedProx" style="border-bottom:3px solid #2ca02c">FedProx</button>
+    <button class="btn active" data-toggle-algo="FedRep" style="border-bottom:3px solid #ff7f0e">FedRep</button>
+    <button class="btn active" data-toggle-algo="Ditto" style="border-bottom:3px solid #d62728">Ditto</button>
+    <button class="btn active" data-toggle-algo="FedProto" style="border-bottom:3px solid #9467bd">FedProto</button>
+  </div>
+</div>
+<div id="chart_traj" class="chart"></div>
+<p class="caption">0 위는 codebook이 해롭게 작용한 라운드, 0 아래는 도움이 된 라운드. Hover하면 정확한 값 표시. Legend 클릭으로 line on/off, drag로 zoom. <strong>R1 극값은 backbone이 거의 random이라 pape_before가 비정상적으로 큰 결과 — codebook quality 신호 아님.</strong></p>
+
+<h2>6. Trajectory heatmap</h2>
+<div id="chart_heatmap" class="chart chart-narrow"></div>
+<p class="caption">algorithm × round matrix. 진한 녹색일수록 큰 개선, 빨강일수록 codebook이 해로움. R1은 backbone bias로 인한 극값이라 별도 색조 (R2부터 색조 정상화).</p>
+
+<h2>7. PAPE before/after — 라운드별 (algo 선택)</h2>
+<div class="controls">
+  <span>알고리즘:</span>
+  <select id="algoSelect">
+    <option value="FedAvg">FedAvg</option>
+    <option value="FedProx">FedProx</option>
+    <option value="FedRep">FedRep</option>
+    <option value="Ditto" selected>Ditto</option>
+    <option value="FedProto">FedProto</option>
+  </select>
+</div>
+<div id="chart_beforeafter" class="chart chart-narrow"></div>
+<p class="caption">선택 알고리즘의 라운드별 PAPE before (backbone only) vs after (+CMO 보정). 음영 = lift 크기. R1 backbone 거의 random이라 before가 비정상적으로 큼.</p>
+
+<h2>8. Codebook 품질 (utilization & perplexity)</h2>
+<div id="chart_quality" class="chart chart-narrow"></div>
+<p class="caption">모든 algorithm에서 utilization = 1.000 (32/32 entry 활성). perplexity는 라운드 진행에 따라 약 22.7 → 25.3으로 점진 증가. backbone 학습이 진행되며 h_g가 다양해져 codebook이 더 균등하게 활용됨.</p>
+
+<h2>9. Trajectory 패턴 3종</h2>
+<ul>
+  <li><strong>R3 단발 역전 그룹 (FedAvg/FedProx/FedProto)</strong>: R3에서 Δpape +3.3 ~ +3.5 (codebook 해로움). R4부터 회복. backbone aggregation의 일시 과적합으로 추정.</li>
+  <li><strong>Ditto — R4부터 단조 개선</strong>: R4 -4.20 → R10 -6.42. global+personal 두 모델 동시 학습이 codebook fit에 더 풍부한 h_g를 제공하는 것으로 추정. R10 perplexity 26.99로 가장 높음 (codebook 다양성).</li>
+  <li><strong>FedRep — R3-R6 4라운드 +Δpape 지속</strong>: encoder/head 분리 학습 (head_epochs=1)으로 초기 h_g 분포 안정화가 늦음. R7부터 회복하여 R10에 -5.53.</li>
+</ul>
+
+<h2>10. Limitation</h2>
+<ul>
+  <li><strong>Single seed (=42)</strong>. multi-seed {42, 123, 7} 미실시. std 없음.</li>
+  <li><strong>R=10 단축</strong>. plan v09-01 target R=150 미도달. plateau 이후 long-tail 동역학 미관찰.</li>
+  <li><strong>aux head on default (λ_aux=0.3)</strong>. v06 §5.4에서 λ_aux=0 + codebook이 best. aux off trajectory 별도 가치.</li>
+  <li><strong>codebook_period=1 고정</strong>. period sweep으로 cost-trajectory tradeoff 측정 미실시.</li>
+  <li><strong>backbone freeze 안 함</strong>. v06 phase 2는 freeze 후 1번 fit. v09는 backbone이 매 라운드 학습 진행. R10 fit과 v06 R20 backbone은 같은 상태가 아님 — 비교는 정성적.</li>
+</ul>
+
+<h2>11. 다음 단계 후보</h2>
+<ol>
+  <li>Multi-seed {42, 123, 7} R=10 sweep — std 측정 (~10분).</li>
+  <li>R=20 E=40 — v06 phase 2 backbone 학습량 매칭 (~30분).</li>
+  <li>aux on/off × 5 algos — v06 §5.4 결과를 매 라운드로 확장 (~10분).</li>
+  <li>codebook_period sweep — period ∈ {1, 2, 5, 10}.</li>
+</ol>
+
+<h2>12. Output</h2>
+<pre><code>experiments/v09_round_vq_codebook/03_fl_per_round_codebook.py   # driver
+experiments/v09_round_vq_codebook/07_make_figures.py             # static figures
+outputs/v09_round_vq_codebook/seed42/V9-RoundCB-{5 algos}/
+  ├── codebook_log.jsonl          # per-round (10행)
+  ├── codebook_history.pt          # (10,32,64) codebook + (10,32,24) offsets
+  ├── final_state_dict.pt
+  └── result.json
+papers/v09_draft/v09_first_report.html (this file, interactive)
+papers/v09_draft/data.json          # all charts read this
+papers/v09_draft/figures/*.png      # static fallbacks</code></pre>
+
+<div class="footer">
+Project: <code>FL_Peak_Project</code> · v06 paper: <code>papers/conference_draft/presentation_v06.md</code> · v09 plan: <code>plans/v09-01_round_wise_codebook.md</code> (당시 plan은 round-wise <em>joint training</em>이었으나, 사용자 명확화 후 v09 실제 방향은 <em>post-hoc per round</em>로 정정됨; joint training 시도는 archive로 <code>experiments/v09_round_vq_codebook/01_*.py</code>, <code>02_*.py</code>에 보존).
+</div>
+
+<!-- ====================================================================
+     Data + scripts
+     ==================================================================== -->
+<script id="data" type="application/json">
+{
+  "rounds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "algos": [
+    "FedAvg",
+    "FedProx",
+    "FedRep",
+    "Ditto",
+    "FedProto"
+  ],
+  "series": {
+    "FedAvg": {
+      "pape_before": [
+        69.69812323469282,
+        52.27544270418956,
+        46.6285620556196,
+        53.623778311748474,
+        54.31335833999841,
+        53.33466197196178,
+        53.30704497157434,
+        53.12158806943771,
+        52.96619240044546,
+        52.86954677553038
+      ],
+      "pape_after": [
+        50.13346797803819,
+        48.85504423449443,
+        50.11515780379079,
+        49.25397096570526,
+        48.30020964289696,
+        47.952929341689966,
+        47.86629015839209,
+        47.80750618956504,
+        47.691033214670576,
+        47.75425230662334
+      ],
+      "pape_delta": [
+        -19.564655256654625,
+        -3.4203984696951295,
+        3.4865957481711902,
+        -4.369807346043217,
+        -6.01314869710145,
+        -5.381732630271813,
+        -5.440754813182252,
+        -5.314081879872674,
+        -5.275159185774882,
+        -5.115294468907038
+      ],
+      "hr1_delta": [
+        2.4927808652064964,
+        -6.087879723463248,
+        -6.330273146634701,
+        -4.16937573402104,
+        -1.2435073190221964,
+        0.06050754906590328,
+        0.02309517755742263,
+        0.42553545699998985,
+        0.5130731417916774,
+        0.511801847614203
+      ],
+      "util": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "perplexity": [
+        22.769115805123374,
+        20.904389934894535,
+        20.684986832813806,
+        21.86118568050186,
+        23.60249899767637,
+        24.69269212341692,
+        25.488511764157195,
+        25.556705151208426,
+        25.83019446367459,
+        25.25921802852945
+      ],
+      "top1_share": [
+        0.17468069120961682,
+        0.17743551214625594,
+        0.30841472577009765,
+        0.23390934134735789,
+        0.15777610818933133,
+        0.18682694715752568,
+        0.1687953919358878,
+        0.17167543200601051,
+        0.18131730528424744,
+        0.17668419734535437
+      ],
+      "k_max": [
+        2504,
+        3113,
+        3426,
+        3192,
+        2115,
+        2159,
+        1881,
+        2136,
+        1757,
+        1946
+      ],
+      "k_min": [
+        26,
+        26,
+        26,
+        26,
+        27,
+        27,
+        27,
+        27,
+        27,
+        27
+      ]
+    },
+    "FedProx": {
+      "pape_before": [
+        69.64020686101777,
+        52.20973146969099,
+        46.57533842946338,
+        53.59930114834055,
+        54.263072611044365,
+        53.34618253095297,
+        53.2939294274066,
+        52.98475054531706,
+        52.86274782651341,
+        52.7506759835995
+      ],
+      "pape_after": [
+        49.98504656975246,
+        49.72536054940318,
+        50.137142532245065,
+        49.02140373074765,
+        48.16526844029179,
+        47.984434156939685,
+        47.875698637466364,
+        47.81171849513469,
+        47.709432162467536,
+        47.720471369176295
+      ],
+      "pape_delta": [
+        -19.65516029126531,
+        -2.484370920287816,
+        3.561804102781686,
+        -4.577897417592901,
+        -6.097804170752575,
+        -5.361748374013288,
+        -5.418230789940239,
+        -5.173032050182371,
+        -5.153315664045877,
+        -5.030204614423205
+      ],
+      "hr1_delta": [
+        2.355481094039444,
+        -6.186526097853328,
+        -6.529215550954678,
+        -3.853776954463454,
+        -1.0558854866635201,
+        0.28785732447059864,
+        0.09669402976039088,
+        0.47298197183780566,
+        0.26035802065550406,
+        0.24902231423970633
+      ],
+      "util": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "perplexity": [
+        23.10369952259864,
+        21.447071848902347,
+        20.039845649850733,
+        20.488225424899007,
+        21.86577459302195,
+        23.759582708120472,
+        25.207990717785773,
+        25.640116830432532,
+        25.61852200654092,
+        24.89910644331356
+      ],
+      "top1_share": [
+        0.1756824442774856,
+        0.20598547458051591,
+        0.3169296268469822,
+        0.20698722764838468,
+        0.15001252191334835,
+        0.1718006511394941,
+        0.16967192587027297,
+        0.17367893814174806,
+        0.1865765088905585,
+        0.17831204608064113
+      ],
+      "k_max": [
+        2565,
+        3500,
+        3974,
+        3525,
+        2797,
+        2356,
+        2002,
+        1812,
+        1947,
+        1944
+      ],
+      "k_min": [
+        26,
+        26,
+        26,
+        26,
+        27,
+        27,
+        27,
+        27,
+        27,
+        27
+      ]
+    },
+    "FedRep": {
+      "pape_before": [
+        72.45090014722568,
+        62.508511708538514,
+        47.8905235185864,
+        46.042879282809885,
+        43.688752480452244,
+        45.74595062492747,
+        52.31429088754611,
+        53.21493418990451,
+        53.52368875666577,
+        53.15633485791069
+      ],
+      "pape_after": [
+        50.960145592028915,
+        49.5485323899536,
+        48.818034026272215,
+        49.61895627908136,
+        49.32009552212414,
+        48.64813977772717,
+        47.833690325136,
+        47.7915188805432,
+        47.63333391582188,
+        47.627479611525516
+      ],
+      "pape_delta": [
+        -21.490754555196766,
+        -12.959979318584914,
+        0.9275105076858168,
+        3.5760769962714747,
+        5.631343041671897,
+        2.9021891527997,
+        -4.48060056241011,
+        -5.42341530936131,
+        -5.890354840843891,
+        -5.528855246385177
+      ],
+      "hr1_delta": [
+        5.112282517888925,
+        -3.7801326988970008,
+        -6.576313973339145,
+        -6.742626493770658,
+        -5.037472909326453,
+        -4.373100625961035,
+        -2.5451612122092655,
+        -0.11614180378482608,
+        0.8020201469858215,
+        0.01070005932706053
+      ],
+      "util": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "perplexity": [
+        21.14557319896234,
+        20.686803002639728,
+        21.912602816846867,
+        18.06247208308477,
+        21.670447825418968,
+        23.286112375893893,
+        24.356519980503997,
+        24.497135099012908,
+        25.563756301522638,
+        25.130934830941875
+      ],
+      "top1_share": [
+        0.15276734284998747,
+        0.1887052341597796,
+        0.2197595792637115,
+        0.31580265464562984,
+        0.2963936889556724,
+        0.2092411720510894,
+        0.15088905584773354,
+        0.16917104933633859,
+        0.19421487603305784,
+        0.18419734535437016
+      ],
+      "k_max": [
+        3366,
+        4028,
+        3141,
+        3774,
+        2860,
+        2665,
+        2245,
+        2150,
+        2145,
+        2146
+      ],
+      "k_min": [
+        26,
+        26,
+        26,
+        26,
+        26,
+        26,
+        27,
+        27,
+        27,
+        27
+      ]
+    },
+    "Ditto": {
+      "pape_before": [
+        69.24542398105343,
+        53.03710892450918,
+        48.72861356795413,
+        53.45594292075203,
+        54.00285180450935,
+        53.994448780054434,
+        54.24789054493444,
+        54.147827581916374,
+        54.088439785893094,
+        54.13728735938557
+      ],
+      "pape_after": [
+        50.23694113495467,
+        49.83841692781543,
+        50.39744089218703,
+        49.258135452515894,
+        48.63887066332947,
+        48.02337104529588,
+        48.06941634730635,
+        47.93624216140777,
+        47.79007884766271,
+        47.71640300537969
+      ],
+      "pape_delta": [
+        -19.008482846098765,
+        -3.1986919966937464,
+        1.6688273242329004,
+        -4.197807468236135,
+        -5.3639811411798775,
+        -5.971077734758552,
+        -6.178474197628091,
+        -6.211585420508605,
+        -6.298360938230381,
+        -6.420884354005878
+      ],
+      "hr1_delta": [
+        3.6735558703522084,
+        -6.774862881842287,
+        -6.80442047146852,
+        -4.1456600438293805,
+        -1.5470742072572747,
+        -1.2828417662513782,
+        0.08594856706984721,
+        0.07250917147942104,
+        0.6749512670565316,
+        -0.364119840664463
+      ],
+      "util": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "perplexity": [
+        20.51975028823927,
+        20.122053698463755,
+        19.70542493140274,
+        21.301009170973234,
+        22.08928797620197,
+        24.505235470287413,
+        25.360837549366156,
+        22.735978860843407,
+        25.055375435583173,
+        26.986665874279172
+      ],
+      "top1_share": [
+        0.1730528424743301,
+        0.20285499624342598,
+        0.3091660405709992,
+        0.23228149261207112,
+        0.16366140746306035,
+        0.16641622839969947,
+        0.16516403706486352,
+        0.15477084898572502,
+        0.17843726521412473,
+        0.1927122464312547
+      ],
+      "k_max": [
+        3071,
+        3785,
+        3583,
+        3538,
+        2598,
+        2193,
+        2417,
+        2743,
+        2103,
+        1788
+      ],
+      "k_min": [
+        26,
+        26,
+        26,
+        26,
+        27,
+        27,
+        27,
+        27,
+        27,
+        27
+      ]
+    },
+    "FedProto": {
+      "pape_before": [
+        69.69702068332973,
+        52.262410527078,
+        46.81763291664167,
+        53.63745622063133,
+        54.292208733420296,
+        53.43264581113238,
+        53.409292488372834,
+        53.173456918381426,
+        53.00579381277559,
+        52.888670744100786
+      ],
+      "pape_after": [
+        50.12175298696626,
+        49.42397103318758,
+        50.15867515830453,
+        49.29493932579795,
+        48.18198308476941,
+        47.96709494761504,
+        48.05490445273628,
+        47.66327684298091,
+        47.77639555909153,
+        47.69132061590238
+      ],
+      "pape_delta": [
+        -19.57526769636347,
+        -2.8384394938904265,
+        3.341042241662862,
+        -4.3425168948333805,
+        -6.110225648650882,
+        -5.465550863517343,
+        -5.354388035636553,
+        -5.510180075400513,
+        -5.22939825368406,
+        -5.1973501281984085
+      ],
+      "hr1_delta": [
+        2.8680396643783386,
+        -5.4086756746939795,
+        -6.128924364050217,
+        -3.8202087343963775,
+        -1.0541147554877561,
+        0.2484926083324268,
+        0.44969004637196797,
+        0.6753296284188721,
+        0.5900167084377639,
+        0.4496749119174783
+      ],
+      "util": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "perplexity": [
+        21.781804533622683,
+        21.235728942493612,
+        20.285809105931953,
+        21.83644903249469,
+        23.409324194126587,
+        26.421471699404833,
+        24.580451496932806,
+        25.125041752425773,
+        25.822117001540082,
+        24.49079176770586
+      ],
+      "top1_share": [
+        0.1729276233408465,
+        0.17430503380916604,
+        0.30528424743300775,
+        0.23854244928625093,
+        0.1614074630603556,
+        0.1859504132231405,
+        0.17067367893814175,
+        0.1789381417480591,
+        0.1854495366892061,
+        0.1759328825444528
+      ],
+      "k_max": [
+        2806,
+        3305,
+        3894,
+        3290,
+        2499,
+        1758,
+        2104,
+        2136,
+        1838,
+        2046
+      ],
+      "k_min": [
+        26,
+        26,
+        26,
+        26,
+        27,
+        27,
+        27,
+        27,
+        27,
+        27
+      ]
+    }
+  },
+  "v06_phase2": {
+    "FedAvg": {
+      "pape_before": 50.701134151833564,
+      "pape_after": 45.353593105062224,
+      "pape_delta": -5.34754104677134,
+      "utilization": 1.0,
+      "perplexity": 26.338362180974098
+    },
+    "FedProx": {
+      "pape_before": 50.7758665985798,
+      "pape_after": 45.5596900161175,
+      "pape_delta": -5.216176582462303,
+      "utilization": 1.0,
+      "perplexity": 25.135730857550833
+    },
+    "FedRep": {
+      "pape_before": 50.695207156765505,
+      "pape_after": 45.51988091711815,
+      "pape_delta": -5.1753262396473545,
+      "utilization": 1.0,
+      "perplexity": 26.700730718598933
+    },
+    "Ditto": {
+      "pape_before": 51.30023915820001,
+      "pape_after": 45.69320719191082,
+      "pape_delta": -5.607031966289185,
+      "utilization": 1.0,
+      "perplexity": 26.245788590076447
+    },
+    "FedProto": {
+      "pape_before": 50.957540860263435,
+      "pape_after": 45.55333527945268,
+      "pape_delta": -5.404205580810753,
+      "utilization": 1.0,
+      "perplexity": 26.55984894738917
+    }
+  }
+}
+</script>
+
+<script>
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const ALGO_COLORS = {
+  FedAvg:'#1f77b4', FedProx:'#2ca02c', FedRep:'#ff7f0e',
+  Ditto:'#d62728',  FedProto:'#9467bd'
+};
+const ALGOS = DATA.algos;
+const ROUNDS = DATA.rounds;
+const FMT = (x, d=2) => (typeof x === 'number') ? x.toFixed(d) : x;
+
+// ============================================================================
+// SVG schematic — build dynamically
+// ============================================================================
+(function buildSchematic() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const R_v06 = 20, R_v09 = 10;
+  const xOffset = 110, boxW = 30, boxH = 24, gap = 4;
+
+  const row_p1 = document.getElementById('row-p1');
+  const row_p2 = document.getElementById('row-p2');
+  const row_v09bb = document.getElementById('row-v09bb');
+  const row_v09cb = document.getElementById('row-v09cb');
+  const row_v09arr = document.getElementById('row-v09arr');
+
+  function rect(x, y, cls, txt, hoverData) {
+    const g = document.createElementNS(NS, 'g');
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', x); r.setAttribute('y', y);
+    r.setAttribute('width', boxW); r.setAttribute('height', boxH);
+    r.setAttribute('rx', 3); r.setAttribute('ry', 3);
+    r.setAttribute('class', cls);
+    if (hoverData) {
+      g.style.cursor = 'pointer';
+      g.addEventListener('mouseenter', () => { r.classList.add('hl'); showSchemInfo(hoverData); });
+      g.addEventListener('mouseleave', () => { r.classList.remove('hl'); resetSchemInfo(); });
+    }
+    g.appendChild(r);
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', x + boxW/2); t.setAttribute('y', y + boxH/2);
+    t.setAttribute('class', 'box-text');
+    t.textContent = txt;
+    g.appendChild(t);
+    return g;
+  }
+
+  // v06 phase 1 row (y=22)
+  for (let r = 1; r <= R_v06; r++) {
+    row_p1.appendChild(rect(xOffset + (r-1)*(boxW+gap), 22, 'bb-box', 'BB R'+r));
+  }
+  // v06 phase 2 row (y=82): single CB at R=20 position
+  row_p2.appendChild(rect(xOffset + (R_v06-1)*(boxW+gap), 82, 'cb-box', 'CB fit'));
+  // arrow from BB R20 down to CB
+  const arrP2 = document.createElementNS(NS,'path');
+  arrP2.setAttribute('d', `M ${xOffset+(R_v06-1)*(boxW+gap)+boxW/2} 48 L ${xOffset+(R_v06-1)*(boxW+gap)+boxW/2} 80`);
+  arrP2.setAttribute('class','arrow');
+  row_p2.appendChild(arrP2);
+
+  // v09 row (y=140 BB, y=170 CB) — only 10 rounds
+  for (let r = 1; r <= R_v09; r++) {
+    const x = xOffset + (r-1)*(boxW+gap);
+    const hover = {
+      round: r,
+      bb: true,
+      lifts: ALGOS.map(a => ({algo:a, delta:DATA.series[a].pape_delta[r-1]}))
+    };
+    row_v09bb.appendChild(rect(x, 132, 'bb-box', 'BB R'+r, hover));
+    row_v09cb.appendChild(rect(x, 168, 'cb-box', 'CB fit', hover));
+    const a = document.createElementNS(NS,'path');
+    a.setAttribute('d', `M ${x+boxW/2} 158 L ${x+boxW/2} 166`);
+    a.setAttribute('class','arrow');
+    row_v09arr.appendChild(a);
+  }
+})();
+
+function showSchemInfo(d) {
+  if (!d || !d.lifts) return;
+  const txt = d.lifts.map(l => `<span style="color:${ALGO_COLORS[l.algo]}">${l.algo}:${FMT(l.delta,2)}</span>`).join(' · ');
+  document.getElementById('schemInfo').innerHTML = `Round ${d.round} Δpape — ${txt}`;
+}
+function resetSchemInfo() {
+  document.getElementById('schemInfo').innerHTML = 'Round box에 hover하면 그 라운드의 lift 정보가 표시됩니다 (v09 03 라인).';
+}
+
+// ============================================================================
+// Table — R10 sortable
+// ============================================================================
+(function buildR10Table() {
+  const tbody = document.getElementById('r10tbody');
+  let rows = ALGOS.map(a => {
+    const s = DATA.series[a];
+    return {
+      algo: a,
+      pape_before: s.pape_before[9],
+      pape_after:  s.pape_after[9],
+      delta:       s.pape_delta[9],
+      util:        s.util[9],
+      perplexity:  s.perplexity[9],
+    };
+  });
+  function render() {
+    tbody.innerHTML = '';
+    const bestDelta = Math.min(...rows.map(r=>r.delta));
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.delta === bestDelta) tr.className = 'row-best';
+      tr.innerHTML = `<td>${r.algo}</td>
+        <td>${FMT(r.pape_before)}</td>
+        <td>${FMT(r.pape_after)}</td>
+        <td class="${r.delta<0?'delta-neg':'delta-pos'}">${r.delta>0?'+':''}${FMT(r.delta)}</td>
+        <td>${FMT(r.util,3)}</td>
+        <td>${FMT(r.perplexity)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  render();
+  const keys = ['pape_before','pape_after','delta','util','perplexity'];
+  document.querySelectorAll('#r10table th.sortable').forEach((th, i) => {
+    let asc = true;
+    th.addEventListener('click', () => {
+      const k = keys[i];
+      rows.sort((a,b) => asc ? a[k]-b[k] : b[k]-a[k]);
+      document.querySelectorAll('#r10table th').forEach(x=>{x.classList.remove('sort-asc','sort-desc');x.classList.add('sortable');});
+      th.classList.remove('sortable');
+      th.classList.add(asc?'sort-asc':'sort-desc');
+      asc = !asc;
+      render();
+    });
+  });
+})();
+
+// ============================================================================
+// Chart: v06 phase2 vs v09 R10 grouped bar
+// ============================================================================
+(function chartCompare() {
+  const v06 = ALGOS.map(a => DATA.v06_phase2[a]?.pape_delta);
+  const v09 = ALGOS.map(a => DATA.series[a].pape_delta[9]);
+  const data = [
+    {x:ALGOS, y:v06, name:'v06 phase 2 (R=20 E=40)', type:'bar', marker:{color:'#7f8c8d'}, text:v06.map(v=>FMT(v)), textposition:'auto'},
+    {x:ALGOS, y:v09, name:'v09 R10 (R=10 E=5)',     type:'bar', marker:{color:'#2c3e50'}, text:v09.map(v=>FMT(v)), textposition:'auto'},
+  ];
+  const layout = {
+    barmode:'group',
+    yaxis:{title:'ΔPAPE', autorange:'reversed'},
+    xaxis:{title:'FL algorithm'},
+    margin:{t:18, l:60, r:20, b:50},
+    legend:{orientation:'h', y:-0.18},
+  };
+  Plotly.newPlot('chart_compare', data, layout, {responsive:true, displayModeBar:false});
+})();
+
+// ============================================================================
+// Chart: 5 algos trajectory (interactive, toggleable)
+// ============================================================================
+let trajVisible = Object.fromEntries(ALGOS.map(a=>[a, true]));
+function chartTraj() {
+  const traces = ALGOS.filter(a => trajVisible[a]).map(a => ({
+    x: ROUNDS, y: DATA.series[a].pape_delta,
+    name: a, mode:'lines+markers', type:'scatter',
+    line:{color:ALGO_COLORS[a], width: (a==='Ditto'||a==='FedRep')?3:2},
+    marker:{size:7},
+    hovertemplate:`<b>${a}</b><br>R%{x}: Δpape=%{y:.2f}<extra></extra>`,
+  }));
+  const layout = {
+    yaxis:{title:'ΔPAPE (test_after - test_before)', zeroline:true, zerolinecolor:'#888', zerolinewidth:1.5},
+    xaxis:{title:'Round', tickmode:'array', tickvals:ROUNDS},
+    shapes:[{type:'rect', xref:'paper', yref:'y', x0:0, x1:1, y0:0, y1:25,
+             fillcolor:'rgba(231,76,60,0.05)', line:{width:0}}],
+    annotations:[
+      {x:0.02, y:0.92, xref:'paper', yref:'paper', text:'codebook hurts', showarrow:false, font:{size:10, color:'#c0392b'}},
+      {x:0.02, y:0.08, xref:'paper', yref:'paper', text:'codebook helps', showarrow:false, font:{size:10, color:'#27ae60'}},
+    ],
+    margin:{t:18, l:60, r:20, b:50},
+    legend:{orientation:'h', y:-0.16},
+    hovermode:'x unified',
+  };
+  Plotly.newPlot('chart_traj', traces, layout, {responsive:true, displayModeBar:false});
+}
+chartTraj();
+
+document.querySelectorAll('[data-toggle-algo]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const a = btn.dataset.toggleAlgo;
+    trajVisible[a] = !trajVisible[a];
+    btn.classList.toggle('active');
+    btn.style.opacity = trajVisible[a] ? '1' : '0.4';
+    chartTraj();
+  });
+});
+
+// ============================================================================
+// Chart: heatmap algo × round
+// ============================================================================
+(function chartHeatmap() {
+  const z = ALGOS.map(a => DATA.series[a].pape_delta);
+  const data = [{
+    z: z, x: ROUNDS.map(r=>'R'+r), y: ALGOS,
+    type: 'heatmap',
+    colorscale: [
+      [0,   '#1a9850'],
+      [0.4, '#a6d96a'],
+      [0.5, '#ffffff'],
+      [0.6, '#fdae61'],
+      [1,   '#d73027']
+    ],
+    zmid: 0, zmin: -20, zmax: 6,
+    text: z.map(row => row.map(v => FMT(v))),
+    texttemplate: '%{text}',
+    textfont:{size:11},
+    hovertemplate:'%{y} %{x}: Δpape=%{z:.2f}<extra></extra>',
+    colorbar:{title:'ΔPAPE'},
+  }];
+  const layout = {
+    yaxis:{title:'', autorange:'reversed'},
+    xaxis:{title:'Round'},
+    margin:{t:18, l:80, r:20, b:50},
+  };
+  Plotly.newPlot('chart_heatmap', data, layout, {responsive:true, displayModeBar:false});
+})();
+
+// ============================================================================
+// Chart: before/after PAPE per round (algo-selectable)
+// ============================================================================
+function chartBeforeAfter(algo) {
+  const s = DATA.series[algo];
+  const traces = [
+    {x:ROUNDS, y:s.pape_before, name:'pape_before (backbone only)',
+     mode:'lines+markers', type:'scatter',
+     line:{color:'#2ca02c', width:2.4}, marker:{size:7},
+     hovertemplate:'R%{x}: %{y:.2f}<extra></extra>'},
+    {x:ROUNDS, y:s.pape_after,  name:'pape_after (+ CMO)',
+     mode:'lines+markers', type:'scatter',
+     line:{color:'#d62728', width:2.4}, marker:{size:7},
+     fill:'tonexty', fillcolor:'rgba(0,170,0,0.08)',
+     hovertemplate:'R%{x}: %{y:.2f}<extra></extra>'},
+  ];
+  const layout = {
+    yaxis:{title:'test PAPE (%)'},
+    xaxis:{title:'Round', tickmode:'array', tickvals:ROUNDS},
+    margin:{t:18, l:60, r:20, b:50},
+    legend:{orientation:'h', y:-0.18},
+    hovermode:'x unified',
+  };
+  Plotly.newPlot('chart_beforeafter', traces, layout, {responsive:true, displayModeBar:false});
+}
+document.getElementById('algoSelect').addEventListener('change', e => chartBeforeAfter(e.target.value));
+chartBeforeAfter('Ditto');
+
+// ============================================================================
+// Chart: codebook quality (perplexity per algo, dual-axis util)
+// ============================================================================
+(function chartQuality() {
+  const ppl_traces = ALGOS.map(a => ({
+    x: ROUNDS, y: DATA.series[a].perplexity,
+    name: a + ' perplexity',
+    mode:'lines+markers', type:'scatter',
+    line:{color:ALGO_COLORS[a], width:2},
+    marker:{size:6},
+    hovertemplate:`<b>${a}</b> R%{x}: perplexity=%{y:.2f}<extra></extra>`,
+  }));
+  const layout = {
+    yaxis:{title:'codebook perplexity (ideal=32)', range:[20, 28]},
+    xaxis:{title:'Round', tickmode:'array', tickvals:ROUNDS},
+    margin:{t:18, l:60, r:20, b:50},
+    legend:{orientation:'h', y:-0.18},
+    shapes:[{type:'line', xref:'paper', yref:'y', x0:0, x1:1, y0:32, y1:32,
+             line:{color:'#888', dash:'dash', width:1}}],
+    annotations:[{x:0.5, y:1.04, xref:'paper', yref:'paper',
+                  text:'utilization = 1.000 (모든 algo × 모든 라운드)',
+                  showarrow:false, font:{size:10, color:'#27ae60'}}],
+    hovermode:'x unified',
+  };
+  Plotly.newPlot('chart_quality', ppl_traces, layout, {responsive:true, displayModeBar:false});
+})();
+</script>
+
+</body>
+</html>
