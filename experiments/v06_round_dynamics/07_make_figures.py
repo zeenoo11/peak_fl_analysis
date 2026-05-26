@@ -100,6 +100,39 @@ def _label(cell: str) -> str:
     return cell.replace("V6-Dyn-B-", "").replace("V6-Dyn-A_centralised", "Centralised (V6-Dyn-A)")
 
 
+# Display-only helpers for the centralised cell (raw npz untouched).
+#   _truncate_x: clip the centralised epoch axis to match the FL round axis.
+#   _smooth_centralised: rolling-mean smoothing of mean / std curves so the
+#   centralised reference line reads cleanly against the FL bands.
+def _truncate_x(x: np.ndarray, m: np.ndarray, s: np.ndarray, max_x: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    if max_x is None or max_x <= 0:
+        return x, m, s
+    mask = x <= max_x
+    return x[mask], m[mask], s[mask]
+
+
+def _rolling_mean(arr: np.ndarray, window: int) -> np.ndarray:
+    if window is None or window <= 1 or arr.size == 0:
+        return arr
+    pad = window // 2
+    padded = np.concatenate([
+        np.full(pad, arr[0]),
+        arr,
+        np.full(window - 1 - pad, arr[-1]),
+    ])
+    kernel = np.ones(window) / window
+    return np.convolve(padded, kernel, mode="valid")
+
+
+def _smooth_centralised(m: np.ndarray, s: np.ndarray, window: int) -> tuple[np.ndarray, np.ndarray]:
+    return _rolling_mean(m, window), _rolling_mean(s, window)
+
+
+# Module-level display config; overridden by CLI flags in main().
+_CENTRALISED_MAX_X = 20
+_CENTRALISED_SMOOTH_WINDOW = 3
+
+
 def _figure_round_vs_pape(traj: dict, fig_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(8.0, 5.0))
     plt.rcParams.update({"font.size": 13})
@@ -119,6 +152,8 @@ def _figure_round_vs_pape(traj: dict, fig_dir: Path) -> None:
     if cent_x_key in traj and cent_y_key in traj:
         x = traj[cent_x_key][0]
         m, s = _mean_std(traj[cent_y_key])
+        x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
+        m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m, label=_label("V6-Dyn-A_centralised"),
                 color=_COLORS["V6-Dyn-A_centralised"], linewidth=1.8, linestyle="--")
         ax.fill_between(x, m - s, m + s,
@@ -220,6 +255,8 @@ def _figure_round_vs_test_pape(traj: dict, fig_dir: Path) -> None:
     if _has(traj, cent_x_key, cent_y_key) and not _all_nan(traj[cent_y_key]):
         x = traj[cent_x_key][0]
         m, s = _mean_std(traj[cent_y_key])
+        x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
+        m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m, label=_label(_CENTRALISED),
                 color=_color_for(_CENTRALISED), linewidth=1.8, linestyle="--")
         ax.fill_between(x, m - s, m + s,
@@ -273,6 +310,8 @@ def _figure_round_vs_train_loss(traj: dict, fig_dir: Path) -> None:
     if _has(traj, cent_x_key, cent_y_key) and not _all_nan(traj[cent_y_key]):
         x = traj[cent_x_key][0]
         m, s = _mean_std(traj[cent_y_key])
+        x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
+        m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m, label=_label(_CENTRALISED),
                 color=_color_for(_CENTRALISED), linewidth=1.8, linestyle="--")
         ax.fill_between(x, m - s, m + s,
@@ -328,6 +367,9 @@ def _figure_round_vs_test_pape_maeonly(traj: dict, fig_dir: Path) -> None:
         x = traj[key_x][0]
         m, s = _mean_std(traj[key_y])
         is_cent = cell.startswith(_CENTRALISED)
+        if is_cent:
+            x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
+            m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m,
                 label=_label(cell.replace("-MAEonly", "")) + r" ($\lambda_{aux}=0$)",
                 color=_color_for(cell),
@@ -365,6 +407,9 @@ def _figure_round_vs_train_loss_maeonly(traj: dict, fig_dir: Path) -> None:
         x = traj[key_x][0]
         m, s = _mean_std(traj[key_y])
         is_cent = cell.startswith(_CENTRALISED)
+        if is_cent:
+            x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
+            m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m,
                 label=_label(cell.replace("-MAEonly", "")) + r" ($\lambda_{aux}=0$)",
                 color=_color_for(cell),
@@ -392,12 +437,22 @@ def main() -> None:
                     help="Override path to trajectories.npz (default: outputs/v06_round_dynamics/trajectories.npz).")
     ap.add_argument("--fig_dir", type=Path, default=None,
                     help="Override output directory (default: outputs/v06_round_dynamics/figures/).")
+    ap.add_argument("--centralised_max_x", type=int, default=20,
+                    help="Truncate the centralised reference curve at this epoch index "
+                         "so its X-axis matches the FL round axis. 0 disables (default: 20).")
+    ap.add_argument("--smooth_window", type=int, default=3,
+                    help="Rolling-mean window applied to the centralised mean / std "
+                         "before plotting (raw npz untouched). 0 or 1 disables (default: 3).")
     args = ap.parse_args()
 
     traj_path = args.traj_path or (OUTPUT_DIR / "v06_round_dynamics" / "trajectories.npz")
     fig_dir = args.fig_dir   or (OUTPUT_DIR / "v06_round_dynamics" / "figures")
     fig_dir.mkdir(parents=True, exist_ok=True)
     traj = dict(np.load(traj_path, allow_pickle=False))
+
+    global _CENTRALISED_MAX_X, _CENTRALISED_SMOOTH_WINDOW
+    _CENTRALISED_MAX_X = args.centralised_max_x
+    _CENTRALISED_SMOOTH_WINDOW = args.smooth_window
 
     # Default-lambda main paper figures.
     _figure_round_vs_pape(traj, fig_dir)
