@@ -102,30 +102,23 @@ uv run python -c "from models.nbeatsx import MinimalNBEATSx"   # smoke import
 
 ## Data
 
-- Raw CSVs: `data/raw/Umass/2016/Apt{N}_2016.csv`. **`data/` is gitignored and license-restricted** — never commit data files.
-- External cold-protocol split: `../Peak_Analysis/configs/v10_households.yaml` (sibling repo; the `v10_` prefix is a legacy external filename and unrelated to in-repo version directories). Required by `src/dataloader/splits.py:load_v10_split` for v01–v04 (raises `FileNotFoundError` if missing). **v06+ does not use this file** — round-dynamics protocols use per-client internal splits.
+- Raw CSVs: `data/raw/Umass/2016/Apt{N}_2016.csv`  
 
 ## Method invariants (load-bearing — do not drift)
 
 For the full method spec see [`experiments/README.md`](experiments/README.md). Hard constraints that apply every session:
 
-- `MinimalNBEATSx` / `NBEATSxAux` state_dict keys are load-bearing — `Peak_Analysis/v10_b2` checkpoints (external sibling repo path) load `strict=True`. Renaming layers requires a coordinated checkpoint migration.
-- `VectorQuantizerKMeans.fit()` is **post-hoc 1-shot**. Iterative federated KMeans is deferred (TAR attack, arxiv:2511.07073). v05 implements the single-shot hierarchical federated variant, and **v06 Phase 2 stacks it post-hoc on top of v06 round-dynamics results**.
-- W5 operating points (HR-preserving σ=3.0/α_v0=1.0/α_w1=0.1; PAPE-aggressive σ=3.0/α_v0=1.5/α_w1=0.5) are carried **unchanged** across versions — do not re-tune on cold splits (would re-introduce v01 §5.4.1 concern).
 - `src/config.py` constants (`INPUT_SIZE=96`, `HORIZON=24`, `D_MODEL=64`, `TRAIN_RATIO=0.7`, `VAL_RATIO=0.1`, `RANDOM_SEED=42`) are hard-coded. Per-apartment z-norm computed on training portion only.
-- `src/utils/metrics.py` (PAPE, HR@k, MAE, MSE, `seven_axis_metrics`) is a **bit-exact port** of `Peak_Analysis/src/peak_analysis/metrics.py`. Definitions must not drift — v01 numbers must remain comparable across all versions.
 
 ## Active work
 
 **Conference 제출용 메인 아키텍처: v06의 codebook 기반 round-level FL.**
-v06 Phase 1 = 5가지 FL 프로토콜의 round-level 학습 동역학 비교 (paper 완성). v06 Phase 2 = post-hoc codebook 스태킹 (v05 hierarchical federated codebook을 v06 결과 위에 적용). 새 실험은 v06/v07 라인 위에서 진행한다.
+v06 Phase 1 = 5가지 FL 프로토콜의 round-level 학습 동역학 비교 (paper 완성). v06 Phase 2 = post-hoc codebook 스태킹 
 
 진행 중인 버전 디렉토리:
 
 - **v06** — `experiments/v06_round_dynamics/` · `outputs/v06_round_dynamics/` · `plans/v06-01_round_dynamics.md` · `papers/v06_draft/v06_round_dynamics.md` (완성, F1–F8)
 - **v07** — `experiments/v07_loss_budget_sweeps/` · `outputs/v07_loss_budget_sweeps/` · `plans/v07-01_loss_and_budget_sweeps.md` · `papers/v07_draft/v07_loss_weight_sensitivity.md` (완성, v07-B/C 미포함) — v06 프로토콜 상에서 λ_aux × hr_weight 민감도 분석
-
-v10 라인은 후보로 남아있을 뿐 현재 진행 미지수다. **자발적으로 v10 작업을 시작하지 말 것** (사용자 지시가 있을 때만).
 
 ## Conventions
 
@@ -133,16 +126,3 @@ v10 라인은 후보로 남아있을 뿐 현재 진행 미지수다. **자발적
 - **Per-seed CLI**: scripts take `--seed S` per invocation. Never put the seed loop inside the script.
 - Output paths are version-namespaced: `outputs/v{NN}_<theme>/seed{S}/...` (e.g., `outputs/v06_round_dynamics/seed42/...`). Never write to a flat `outputs/`.
 - Numbered scripts (`01_*.py`, `02_*.py`, ...) run in order; `sys.path.insert(0, 'src')` at script top is intentional.
-- Version increments only when **protocol/framing** changes, not method.
-
-## Agent workflow (`claude team`)
-
-Default fan-out for v06/v07 work: `lab-leader` → `engineer` → `executor` → `exp-critic`.
-
-- **lab-leader** — coordinator. Reads project state, manages TODOs, dispatches to specialists. Use first when starting any new task.
-- **engineer** — builder. Writes/edits scripts under `experiments/v{NN}_*/` and helpers under `src/`. Adds pytest. Does **not** run multi-seed sweeps (executor's job).
-- **executor** — verifier + runner. Integrity-checks engineer's code (state_dict load, normalisation, seeds, MLflow wiring), runs `{42, 123, 7}` as background tasks, records to `papers/v{NN}_draft/`. Does **not** write code (sends back to engineer if a bug is found).
-- **exp-critic** — sign-off on whether results are conclusive before they enter the paper.
-- **Explore** — read-only search ("where is X / which files reference Y"). Use instead of doing manual grep tours.
-
-Use `Agent` with `isolation: "worktree"` when parallel agents may touch overlapping files.
