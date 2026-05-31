@@ -452,6 +452,12 @@ def main() -> None:
     ap.add_argument("--respawn_n_min", type=float, default=1.0,
                     help="ema_count threshold below which a code is respawned.")
     ap.add_argument("--no_amp", action="store_true")
+    ap.add_argument("--log_test_per_round", action="store_true",
+                    help="Also evaluate the TEST split at the end of every round and "
+                         "log it as row['test'] in round_log.jsonl. Off by default "
+                         "(preserves legacy behaviour: only terminal test). Enables a "
+                         "per-round TEST PAPE trajectory directly comparable to the "
+                         "RoundCB (03) post-hoc curve.")
     ap.add_argument("--output_namespace", type=str, default="v09_round_vq_codebook")
     args = ap.parse_args()
 
@@ -624,6 +630,13 @@ def main() -> None:
             server_model, splits, "val",
             batch_size=args.batch_size, use_amp=use_amp,
         )
+        test_metrics_round = (
+            _eval_per_client(
+                server_model, splits, "test",
+                batch_size=args.batch_size, use_amp=use_amp,
+            )
+            if args.log_test_per_round else None
+        )
         wall = time.time() - t_round
         row = {
             "round": r,
@@ -639,6 +652,8 @@ def main() -> None:
             "server_vq": server_vq,
             "val": val_metrics,
         }
+        if test_metrics_round is not None:
+            row["test"] = test_metrics_round
         history.append(row)
         with log_path.open("a") as fh:
             fh.write(json.dumps(row) + "\n")

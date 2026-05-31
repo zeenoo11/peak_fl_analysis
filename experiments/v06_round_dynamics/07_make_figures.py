@@ -143,9 +143,8 @@ def _figure_round_vs_pape(traj: dict, fig_dir: Path) -> None:
         if key_x not in traj or key_y not in traj:
             continue
         x = traj[key_x][0]  # round indices same across seeds
-        m, s = _mean_std(traj[key_y])
+        m, _ = _mean_std(traj[key_y])
         ax.plot(x, m, label=_label(cell), color=_COLORS[cell], linewidth=2.0)
-        ax.fill_between(x, m - s, m + s, color=_COLORS[cell], alpha=0.20)
 
     cent_x_key = "V6-Dyn-A_centralised_round_idx"
     cent_y_key = "V6-Dyn-A_centralised_val_pape_mean"
@@ -153,12 +152,11 @@ def _figure_round_vs_pape(traj: dict, fig_dir: Path) -> None:
         x = traj[cent_x_key][0]
         m, s = _mean_std(traj[cent_y_key])
         x, m, s = _truncate_x(x, m, s, _CENTRALISED_MAX_X)
-        m, s = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
+        m, _ = _smooth_centralised(m, s, _CENTRALISED_SMOOTH_WINDOW)
         ax.plot(x, m, label=_label("V6-Dyn-A_centralised"),
                 color=_COLORS["V6-Dyn-A_centralised"], linewidth=1.8, linestyle="--")
-        ax.fill_between(x, m - s, m + s,
-                        color=_COLORS["V6-Dyn-A_centralised"], alpha=0.10)
 
+    ax.set_xlim(1, 20)
     ax.set_xlabel("Round (FL) / Epoch (Centralised)")
     ax.set_ylabel("Across-client validation PAPE (%)")
     ax.set_title("F1: Round-by-round validation PAPE")
