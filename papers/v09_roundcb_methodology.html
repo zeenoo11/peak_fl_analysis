@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoundCB — Methodology (Federated Residual Codebook)</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171b22; --panel2:#1d2230; --line:#2a3140;
+    --ink:#e7ecf3; --mut:#9aa6b8; --dim:#6b7689;
+    --r1:#f2a23c; /* residual / NBEATSx */
+    --r2:#5cc8ff; /* aggregation */
+    --r3:#5fd38a; /* correction */
+    --proto:#b48cff;
+    --no:#ff7a8a;
+    --mono:"SFMono-Regular",ui-monospace,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI","Pretendard","Malgun Gothic",sans-serif;
+    line-height:1.7;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:42px 28px 90px}
+  header.top{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:14px}
+  .kicker{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--proto);font-weight:700}
+  h1{font-size:27px;margin:6px 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--mut);font-size:14.5px}
+  h2{font-size:20px;margin:48px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h2 .step{font-family:var(--mono);font-size:13px;padding:2px 9px;border-radius:6px;margin-right:8px;vertical-align:middle}
+  .s1{background:rgba(242,162,60,.16);color:var(--r1)}
+  .s2{background:rgba(92,200,255,.14);color:var(--r2)}
+  .s3{background:rgba(95,211,138,.14);color:var(--r3)}
+  h3{font-size:16px;margin:26px 0 8px}
+  p{margin:10px 0}
+  code{font-family:var(--mono);font-size:.85em;background:#222836;padding:1px 6px;border-radius:5px;color:#cdd6e6}
+  .mut{color:var(--mut)} .dim{color:var(--dim)}
+  ul,ol{margin:10px 0}
+  li{margin:6px 0}
+  /* equation block */
+  .eq{font-family:var(--mono);background:#0b0e13;border:1px solid var(--line);
+    border-left:3px solid var(--r1);border-radius:0 8px 8px 0;
+    padding:13px 18px;margin:14px 0;font-size:13.5px;color:#dbe4f2;white-space:pre-wrap;overflow-x:auto}
+  .eq.a{border-left-color:var(--r2)} .eq.c{border-left-color:var(--r3)}
+  .eq .lbl{float:right;color:var(--dim);font-size:11.5px}
+  sub,sup{font-size:.72em}
+  /* flow diagram */
+  .flow{font-family:var(--mono);font-size:12.3px;background:#0b0e13;border:1px solid var(--line);
+    border-radius:10px;padding:18px;margin:16px 0;white-space:pre;overflow-x:auto;color:#c7d2e4;line-height:1.5}
+  .flow .k1{color:var(--r1)} .flow .k2{color:var(--r2)} .flow .k3{color:var(--r3)}
+  .flow .pr{color:var(--proto)} .flow .gr{color:var(--dim)} .flow .wn{color:var(--no)}
+  /* table */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);border-bottom:2px solid var(--line)}
+  td.k{color:var(--mut);font-weight:600;width:26%}
+  tbody tr:hover td{background:#1a1f2b}
+  /* algo box */
+  .algo{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 4px;margin:16px 0}
+  .algo .hd{font-weight:700;font-size:13px;color:var(--proto);padding:8px 16px;border-bottom:1px solid var(--line)}
+  .algo pre{font-family:var(--mono);font-size:12.3px;color:#cdd6e6;margin:0;padding:12px 16px;white-space:pre;overflow-x:auto;line-height:1.55}
+  .algo .cm{color:var(--dim)} .algo .kw{color:var(--proto)} .algo .h1{color:var(--r1)} .algo .h2{color:var(--r2)} .algo .h3{color:var(--r3)}
+  .note{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--proto);
+    border-radius:0 10px 10px 0;padding:13px 18px;margin:16px 0;font-size:13.8px}
+  .note.warn{border-left-color:var(--no)}
+  .note b{color:var(--ink)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;
+    background:rgba(180,140,255,.14);color:var(--proto);border:1px solid rgba(180,140,255,.4)}
+  .footer{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:780px){.twocol{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">Methodology · v09 RoundCB</div>
+  <h1>Federated Residual Codebook on a Co-trained NBEATSx Backbone</h1>
+  <div class="sub">NBEATSx 잔차 추출 → 2-stage federated 집계(Aggregation) → 사후 보정(Correction)의 전 과정. <span class="dim">근거: <code>03_fl_per_round_codebook.py</code>, <code>src/fl/codebook_fl.py</code>, <code>src/models/nbeatsx.py</code></span></div>
+</header>
+
+<div class="note">
+  <b>설계 요지.</b> RoundCB는 세 모듈로 구성된다 — <span style="color:var(--r1)">(R) NBEATSx 잔차 분해로 표현 추출</span>,
+  <span style="color:var(--r2)">(A) 표현에 대한 2-stage federated 군집화(codebook)</span>,
+  <span style="color:var(--r3)">(C) 군집별 평균 forecast 잔차(offset)로 예측 보정</span>.
+  핵심은 <b>두 종류의 잔차</b>를 구분하는 것이다: <b>(i) 입력측 backcast 잔차</b>(trend·seasonal이 설명 못 한 부분 → generic hidden <code>h<sub>g</sub></code>로 인코딩)와
+  <b>(ii) 출력측 forecast 잔차</b> <code>y−ŷ</code>(codebook offset으로 저장). codebook은 (i)로 라우팅하고 (ii)로 보정한다.
+  <span class="dim">codebook은 backbone forward를 거치지 않으므로 표현 형성(R-loop)은 NBEATSx 자체에 국한된다.</span>
+</div>
+
+<!-- ===================== 표기/데이터 ===================== -->
+<h2>M.1 표기 · 데이터</h2>
+<table>
+  <tbody>
+    <tr><td class="k">데이터</td><td>UMass Smart* 2016 시간별 부하, <code>filter_valid_apartments(min_hours=7000)</code> 통과 가구 N=114. 가구당 시계열을 시간 순서로 train 70% / val 10% / test 20% 분할(stride=24, 비중첩 sliding window).</td></tr>
+    <tr><td class="k">정규화</td><td>가구별 z-norm <code>(μ<sub>a</sub>, σ<sub>a</sub>)</code>는 <b>train 구간에서만</b> 추정(invariant).</td></tr>
+    <tr><td class="k">윈도</td><td>입력 <code>x ∈ ℝ<sup>L</sup></code>, L=INPUT_SIZE=96 → 예측 <code>ŷ ∈ ℝ<sup>H</sup></code>, H=HORIZON=24.</td></tr>
+    <tr><td class="k">하이퍼파라미터</td><td>D_MODEL=64, codebook 크기 M=32, 가구별 Stage-1 군집 수 K<sub>local</sub>=2, 보정 강도 α<sub>v0</sub>=1.0, 보조 손실 λ<sub>aux</sub>=0.3 (hr_weight=0.1). 라운드 R, 로컬 epoch E.</td></tr>
+    <tr><td class="k">클라이언트</td><td>가구 i ∈ {1..114}, 각자 윈도 집합 <code>𝒟<sub>i</sub><sup>train</sup></code>. 전원 참여(C=1.0).</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================== NBEATSx 잔차 ===================== -->
+<h2><span class="step s1">R</span>M.2 NBEATSx 잔차 분해 — 표현 <code>h<sub>g</sub></code> 추출</h2>
+<p>
+backbone은 <code>NBEATSxAux(latent_source='h_generic')</code> — 3-stack <b>MinimalNBEATSx</b>(trend / seasonal / generic) 본체에
+<code>PeakAuxHead</code>를 붙인 형태다. NBEATS의 핵심은 <b>iterative residual decomposition</b>: 각 stack이 입력의 일부를 설명(backcast)하고, 남은 잔차를 다음 stack으로 넘긴다.
+</p>
+
+<div class="flow"><span class="k1">x ∈ ℝ⁹⁶</span> (z-normed)
+   │   r⁽⁰⁾ = x
+   ▼
+┌─ <span class="k1">Trend stack</span> ──────────────┐   4-layer MLP(fc1..fc4) → hₜ
+│  (bₜ, fₜ, hₜ) = Stack_t(r⁽⁰⁾)  │   θ=proj(h) → Polynomial basis
+└──────────────┬───────────────┘
+   r⁽¹⁾ = r⁽⁰⁾ − bₜ   <span class="gr">(trend 제거 후 잔차)</span>
+   ▼
+┌─ <span class="k1">Seasonal stack</span> ───────────┐   → h_s, Harmonic basis
+│  (b_s, f_s, h_s)=Stack_s(r⁽¹⁾)│
+└──────────────┬───────────────┘
+   r⁽²⁾ = r⁽¹⁾ − b_s  <span class="wn">← trend·seasonal이 설명 못 한 잔차</span>
+   ▼
+┌─ <span class="k1">Generic stack</span> ────────────┐   Identity basis
+│  (b_g, f_g, <span class="k1">h_g</span>)=Stack_g(r⁽²⁾)│   <span class="k1">h_g = fc4(...) ∈ ℝ⁶⁴</span>
+└──────────────────────────────┘   ↑ "잔차의 latent 요약"
+   │
+   ▼
+ŷ = fₜ + f_s + f_g  ∈ ℝ²⁴        h_g → (PeakAuxHead, codebook 라우팅)</div>
+
+<p>각 stack의 내부 (<code>nbeatsx.py:95</code>) 와 분해 (<code>nbeatsx.py:139</code>):</p>
+<div class="eq">stack 내부:  h = fc₄( σ( fc₃( σ( fc₂( σ( fc₁(r) ) ) ) ) ) )     <span class="lbl">σ = ReLU, h ∈ ℝ⁶⁴</span>
+            θ = proj(h);   (backcast, forecast) = Basis(θ)</div>
+<div class="eq">r⁽⁰⁾ = x
+(bₜ, fₜ, hₜ) = Stack_t(r⁽⁰⁾);   r⁽¹⁾ = r⁽⁰⁾ − bₜ
+(b_s, f_s, h_s) = Stack_s(r⁽¹⁾); r⁽²⁾ = r⁽¹⁾ − b_s
+(b_g, f_g, <b>h_g</b>) = Stack_g(<b>r⁽²⁾</b>)        <span class="lbl">generic은 정제된 잔차 r⁽²⁾ 위에서 동작</span>
+ŷ = fₜ + f_s + f_g</div>
+
+<div class="note">
+  <b>왜 <code>h<sub>g</sub></code>가 "잔차 표현"인가.</b> generic stack은 trend·seasonal backcast를 제거한 <b>이중 정제 잔차 <code>r⁽²⁾</code></b>를 입력으로 받는다.
+  따라서 그 hidden <code>h<sub>g</sub>=fc₄(·) ∈ ℝ⁶⁴</code>는 "공통 구조(추세·계절성)로 설명되지 않은, 가구별·희귀 패턴"을 압축한 latent다.
+  RoundCB는 codebook을 바로 이 <code>h<sub>g</sub></code> 위에 세운다 — 보내주신 "residual → prototype memory"의 residual이 코드에서 정확히 <code>h<sub>g</sub></code>에 대응한다.
+</div>
+
+<!-- ===================== 백본 학습 ===================== -->
+<h2>M.3 Federated backbone 학습 (codebook과 분리)</h2>
+<p>
+backbone은 <code>run_fl_aux</code>로 표준 federated 학습된다(알고리즘 ∈ {FedAvg, FedProx, FedRep, Ditto, FedProto}, 기본 FedAvg).
+라운드마다 server state를 broadcast → 각 가구 E epoch 로컬 학습 → 집계. 로컬 손실:
+</p>
+<div class="eq">𝓛 = MAE(ŷ, y) + λ<sub>aux</sub> · peak_aux(â, ĥ, y; hr_weight)      <span class="lbl">λ_aux=0.3, hr_weight=0.1</span></div>
+<p class="mut">
+codebook은 이 손실에 들어가지 않는다. 즉 backbone은 codebook의 존재를 모른 채 학습되며, 표현 형성(R-loop)은 NBEATSx 잔차 분해 + peak-aux head로만 일어난다.
+이것이 RoundCB가 <span class="pill">post-hoc</span>인 이유다 (<code>03</code> docstring: forward가 codebook을 절대 통과하지 않음, no commit_loss).
+</p>
+
+<!-- ===================== 집계 ===================== -->
+<h2><span class="step s2">A</span>M.4 라운드별 2-stage Federated Codebook (Aggregation)</h2>
+<p>
+매 라운드 종료 시(주기 <code>codebook_period</code>), 그 시점의 <b>frozen backbone</b> 위에서 codebook을 처음부터 다시 fit한다. 세 단계 모두 federation contract를 지킨다 — raw <code>h<sub>g</sub></code>·raw 잔차는 가구를 벗어나지 않고, 요약 통계만 업로드된다.
+</p>
+
+<h3>Stage 1 — 가구 로컬 KMeans <span class="dim">(<code>codebook_fl.py:482 local_codebook_step_from_splits</code>)</span></h3>
+<p>가구 i가 자신의 train 윈도를 frozen forward → <code>H<sub>i</sub> = { h<sub>g</sub>(x) : x ∈ 𝒟<sub>i</sub><sup>train</sup> } ∈ ℝ<sup>N<sub>i</sub>×64</sup></code>. 그 위에 로컬 KMeans++(K<sub>local</sub>=2):</p>
+<div class="eq a">{ μ<sub>i,k</sub>, n<sub>i,k</sub> }<sub>k=1..K<sub>i</sub></sub> = KMeans++(H<sub>i</sub>, K<sub>local</sub>)      <span class="lbl">μ: centroid ∈ ℝ⁶⁴, n: count, Σ n = N<sub>i</sub></span>
+업로드 = (centroids μ<sub>i,·</sub>, counts n<sub>i,·</sub>)    <span class="lbl">raw h_g는 업로드 안 함</span></div>
+<p class="mut">소형 가구 fallback: <code>K<sub>i</sub> = min(K<sub>local</sub>, N<sub>i</sub>)</code>.</p>
+
+<h3>Stage 2 — 서버 가중 KMeans <span class="dim">(<code>codebook_fl.py:236 merge_local_codebooks</code>)</span></h3>
+<p>서버가 모든 가구의 centroid를 쌓고, 각 centroid를 그 count로 가중하여 전역 M개로 재군집:</p>
+<div class="eq a">P = ⋃<sub>i</sub> { μ<sub>i,k</sub> },   w = ⋃<sub>i</sub> { n<sub>i,k</sub> }
+<b>C</b> = KMeans++(P, M=32; sample_weight = w) ∈ ℝ<sup>32×64</sup>      <span class="lbl">전역 codebook (broadcast)</span></div>
+<p>진단치도 함께 계산: utilization(비어있지 않은 cluster 비율), perplexity = exp(entropy), k_min/k_max, Stage-2 inertia.</p>
+
+<h3>Stage 3 — Federated 잔차 offset <span class="dim">(<code>codebook_fl.py:351 federated_residual_offsets</code>)</span></h3>
+<p>각 가구가 자신의 <code>h<sub>g</sub></code>를 전역 codebook에 1-NN 라우팅하고, cluster별 <b>forecast 잔차 부분합</b>과 count를 업로드. 서버가 cluster별로 평균:</p>
+<div class="eq a">c*<sub>i</sub>(x) = argmin<sub>m</sub> ‖ h<sub>g</sub>(x) − C<sub>m</sub> ‖₂          <span class="lbl">입력측 잔차로 라우팅</span>
+r<sub>i</sub>(x) = y<sub>z</sub>(x) − ŷ<sub>z</sub>(x) ∈ ℝ²⁴               <span class="lbl">출력측 forecast 잔차</span>
+업로드 = ( Σ<sub>x:c*=m</sub> r<sub>i</sub>(x),  #{x:c*<sub>i</sub>=m} )<sub>m</sub>      <span class="lbl">부분합·count만</span>
+서버:  <b>o<sub>m</sub></b> = ( Σ<sub>i</sub> Σ<sub>x:c*<sub>i</sub>=m</sub> r<sub>i</sub>(x) ) / max( Σ<sub>i</sub> #{x:c*<sub>i</sub>=m}, 1 )   ∈ ℝ²⁴</div>
+<p class="mut">결과 <code>offsets ∈ ℝ<sup>32×24</sup></code>. 비어있는 cluster는 offset=0 (그 경로의 ŷ는 무보정). 이 <code>o<sub>m</sub></code>이 곧 "cluster m으로 라우팅되는 패턴들의 <b>전형적 예측 오차</b>" — prototype memory의 저장 내용물이다.</p>
+
+<!-- ===================== 보정 ===================== -->
+<h2><span class="step s3">C</span>M.5 테스트 시 보정 (Correction)</h2>
+<p>가구의 test 윈도를 frozen backbone에 1회 forward → <code>(h<sub>g</sub><sup>test</sup>, ŷ<sub>base,z</sub>)</code>. codebook 라우팅 후 해당 offset을 더하고 kW로 역정규화 (<code>03:255-263</code>):</p>
+<div class="eq c">c* = argmin<sub>m</sub> ‖ h<sub>g</sub><sup>test</sup> − C<sub>m</sub> ‖₂
+ŷ<sub>corr,z</sub> = ŷ<sub>base,z</sub> + α<sub>v0</sub> · o<sub>c*</sub>            <span class="lbl">α<sub>v0</sub> = 1.0 (carry-over, 재튜닝 안 함)</span>
+ŷ<sub>kW</sub> = ŷ<sub>corr,z</sub> · σ<sub>a</sub> + μ<sub>a</sub>          <span class="lbl">가구별 z-norm 역변환</span></div>
+<p>지표는 kW 공간에서 가구별 PAPE / HR@1 / HR@2 / MAE / MSE(kW²)를 산출 후 가구 평균(±std, ddof=1). 각 라운드마다 보정 전(<code>test_before</code>)·후(<code>test_after</code>)와 그 차이(<b>lift</b> ΔPAPE 등)를 JSONL 1행으로 기록 → <b>per-round lift trajectory</b>.</p>
+
+<!-- ===================== 전체 파이프라인 ===================== -->
+<h2>M.6 전체 파이프라인 한 장</h2>
+<div class="flow"><span class="gr">══ 매 라운드 r = 1..R ══════════════════════════════════════</span>
+
+[Server] broadcast backbone state θ_r
+   │
+   ▼  <span class="gr">각 가구 i: E epoch 로컬 학습</span>
+[Client i]  𝓛 = MAE(ŷ,y) + 0.3·peak_aux        <span class="wn">← codebook 미관여</span>
+   │  upload Δθ_i
+   ▼
+[Server]  θ_{r+1} = FedAvg({θ_i})              <span class="k1">(R: backbone 표현)</span>
+
+<span class="gr">── 라운드 끝: codebook fit (frozen θ_{r+1}) ──────────────</span>
+[Client i] h_g(𝒟_i) → <span class="k2">Stage1</span>: KMeans(K=2) → (μ_i, n_i) ↑
+[Server]   <span class="k2">Stage2</span>: weighted KMeans(M=32) → C ↓ broadcast   <span class="k2">(A)</span>
+[Client i] route h_g→C, r=y−ŷ → (Σr_m, cnt_m) ↑
+[Server]   <span class="k2">Stage3</span>: o_m = Σr_m / Σcnt_m → offsets        <span class="k2">(A)</span>
+   │
+   ▼  test 윈도 평가
+[Eval]  ŷ_corr = ŷ_base + α·o_{c*(h_g^test)}    <span class="k3">(C)</span>
+        → before/after PAPE, lift  → codebook_log.jsonl[r]
+<span class="gr">════════════════════════════════════════════════════════════</span></div>
+
+<div class="algo">
+  <div class="hd">Algorithm — RoundCB (per-round federated residual codebook)</div>
+<pre><span class="kw">input</span>: clients {𝒟_i}, rounds R, local epochs E, M=32, K=2, α=1.0
+<span class="kw">init</span> : backbone θ ← init_backbone_aux(seed)
+<span class="kw">for</span> r = 1 .. R:
+    <span class="cm"># ---- backbone (codebook-agnostic) ----</span>
+    <span class="kw">for</span> each client i:  θ_i ← LocalTrain(θ, 𝒟_i, E)   <span class="cm"># 𝓛=MAE+0.3·aux</span>
+    θ ← <span class="h1">FedAvg</span>({θ_i})
+    <span class="cm"># ---- Stage 1: local KMeans on residual rep h_g ----</span>
+    <span class="kw">for</span> each client i:
+        H_i ← h_g( forward_frozen(θ, 𝒟_i^train) )
+        (μ_i, n_i) ← <span class="h2">KMeans++</span>(H_i, K)               <span class="cm"># upload (μ,n) only</span>
+    <span class="cm"># ---- Stage 2: server weighted merge ----</span>
+    C ← <span class="h2">KMeans++</span>( stack{μ_i}, M; sample_weight=stack{n_i} )
+    <span class="cm"># ---- Stage 3: federated residual offsets ----</span>
+    <span class="kw">for</span> each client i:
+        c*_i ← 1NN(H_i, C);  r_i ← y_z − ŷ_z
+        upload ( Σ_{c*=m} r_i ,  count_m )
+    o_m ← Σ_i Σ r_i,m / max(Σ_i count_i,m, 1)        <span class="cm"># offsets ∈ ℝ^{M×H}</span>
+    <span class="cm"># ---- Correction + log ----</span>
+    <span class="kw">for</span> each client i:  ŷ_corr ← ŷ_base + α·o_{1NN(h_g^test, C)}
+    log[r] ← { before, after, lift=after−before, util, perplexity }
+<span class="kw">return</span> θ, {C_r, o_r}_r, lift_trajectory</pre>
+</div>
+
+<!-- ===================== federation contract ===================== -->
+<h2>M.7 Federation contract · 산출물</h2>
+<div class="twocol">
+  <div>
+    <h3>프라이버시 계약</h3>
+    <ul>
+      <li>Stage 1: raw <code>h<sub>g</sub></code> 대신 <b>(centroid, count)</b>만 업로드.</li>
+      <li>Stage 3: raw 잔차 대신 <b>(잔차 부분합, count)</b>만 업로드.</li>
+      <li>서버는 가구별 윈도를 절대 보지 않음. v05 FedCB 계약을 그대로 계승.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>per-seed 산출물</h3>
+    <ul>
+      <li><code>codebook_log.jsonl</code> — 라운드별 before/after 7-axis + lift + 진단.</li>
+      <li><code>codebook_history.pt</code> — <code>{rounds, codebook (R',M,64), offsets (R',M,24)}</code>.</li>
+      <li><code>result.json</code> — terminal 요약 + <code>lift_trajectory</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="note warn">
+  <b>R/A/C 위치 재확인.</b> RoundCB는 <b>A·C만 구동</b>한다. (R)은 NBEATSx 잔차 분해 + peak-aux가 담당하며 codebook은 표현에 되먹이지 않는다.
+  codebook이 표현 형성에까지 관여하는 통합 버전(commitment loss로 R까지 켜는 것)은 별도 driver <code>02_fl_vq_dynamics.py</code> (FedVQ)이며,
+  RoundCB의 <b>유일한 출력 영향 경로는 offset 보정(C)</b>이다.
+</div>
+
+<div class="footer">
+  근거 — <code>experiments/v09_round_vq_codebook/03_fl_per_round_codebook.py</code> ·
+  <code>src/fl/codebook_fl.py</code> (Stage1/2/3) · <code>src/models/nbeatsx.py</code> (residual 분해) ·
+  <code>src/models/nbeatsx_aux.py</code> · <code>src/fl/round_aux.py</code> (run_fl_aux)<br>
+  invariants — INPUT_SIZE=96, HORIZON=24, D_MODEL=64, M=32, K_local=2, α_v0=1.0, λ_aux=0.3, seeds {42,123,7}<br>
+  생성 2026-05-26 · Methodology 초안 (수치 미포함, 구조 명세)
+</div>
+
+</div>
+</body>
+</html>
