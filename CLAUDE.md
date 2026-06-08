@@ -86,7 +86,7 @@ Orchestration guidance for Claude Code working in this repository. Detail lives 
 Peak-aware residential load forecasting on UMass Smart* 2016 hourly data. NBEATSx + peak-aux head + post-hoc Peak-VQ + W5 hybrid Gaussian correction. **Method is frozen at v01**; only protocol/framing changes across versions.
 
 - v01–v05 are past versions, **reference only**. See [`experiments/README.md`](experiments/README.md) (themes + frozen method spec + code conventions) and [`papers/README.md`](papers/README.md) (paper status manifest).
-- **v06 / v07 are the active lines.** See *Active work* below.
+- **v09 (RoundCB) is the current focus**; v06 / v07 / v08 are supporting/reference lines feeding it. See *Active work* below.
 
 ## Environment & commands
 
@@ -112,13 +112,24 @@ For the full method spec see [`experiments/README.md`](experiments/README.md). H
 
 ## Active work
 
-**Conference 제출용 메인 아키텍처: v06의 codebook 기반 round-level FL.**
-v06 Phase 1 = 5가지 FL 프로토콜의 round-level 학습 동역학 비교 (paper 완성). v06 Phase 2 = post-hoc codebook 스태킹 
+**현재 목표: v09 (RoundCB) 실험을 논문화.** 최종 산출물은 컨퍼런스 제출 원고
+[`papers/conference_draft/presentation_final.md`](papers/conference_draft/presentation_final.md)
+— v09 실험 결과로 이 원고를 완성하는 것이 작업의 종착점이다.
+
+**RoundCB** = Round-wise federated Codebook. backbone hidden `h_g ∈ ℝ⁶⁴`(NBEATSx
+generic stack)를 입력으로, codebook을 **R(Representation) / A(Aggregation) /
+C(Correction)** 세 축으로 분석하며 v09는 **A·C에 집중**한다 (R은 `h_g`를 그대로 사용,
+commitment loss 없음). A = 2-stage hierarchical federated KMeans (client K_local=2
+→ server count-weighted M=32, raw `h_g` 미전송), C = cluster-mean offset (CMO)로
+추론 시점 1-NN routing 보정 (`ŷ_corr = ŷ_base + α·offset[c*]`, α 기본 1.0).
+backbone-agnostic → 5개 FL 알고리즘 전부 −5.7~−6.5 PAPE lift.
 
 진행 중인 버전 디렉토리:
 
-- **v06** — `experiments/v06_round_dynamics/` · `outputs/v06_round_dynamics/` · `plans/v06-01_round_dynamics.md` · `papers/v06_draft/v06_round_dynamics.md` (완성, F1–F8)
-- **v07** — `experiments/v07_loss_budget_sweeps/` · `outputs/v07_loss_budget_sweeps/` · `plans/v07-01_loss_and_budget_sweeps.md` · `papers/v07_draft/v07_loss_weight_sensitivity.md` (완성, v07-B/C 미포함) — v06 프로토콜 상에서 λ_aux × hr_weight 민감도 분석
+- **v09 (메인)** — `experiments/v09_round_vq_codebook/` · `outputs/v09_round_vq_codebook/` · `plans/v09-01_round_wise_codebook.md` · `papers/v09_draft/` · 방법론 초안 `papers/v09_roundcb_methodology_draft.md`. R=20, 114가구, seeds {42,123,7}. **미해결 TODO (원고 §4-1/§5)**: ① v09 centralised cell 미실행(상한 49.4는 v06 참조값), ② TimesFM 등 TSFM baseline 수치 미확보.
+- **v08** — `experiments/v08_round_dynamics_long/` · `outputs/v08_round_dynamics_long/` — v06 mirror를 (E=5, R=150) long-rounds로 옮긴 버전(R/E≈30, FL 표준 영역). post-hoc 1-shot codebook stacking, 3-seed 완료 (F1–F6). v09의 직전 baseline.
+- **v06** — `experiments/v06_round_dynamics/` · `outputs/v06_round_dynamics/` · `plans/v06-01_round_dynamics.md` · `papers/v06_draft/v06_round_dynamics.md` (완성, F1–F8). 5개 FL 프로토콜 round-level 동역학 비교 + post-hoc codebook stacking. centralised 상한·K_local elbow 등 v09가 참조하는 ablation 출처.
+- **v07** — `experiments/v07_loss_budget_sweeps/` · `outputs/v07_loss_budget_sweeps/` · `plans/v07-01_loss_and_budget_sweeps.md` · `papers/v07_draft/v07_loss_weight_sensitivity.md` (완성, v07-B/C 미포함) — v06 프로토콜 상 λ_aux × hr_weight 민감도. v09 aux-head ablation(§4-2)의 근거.
 
 ## Conventions
 
