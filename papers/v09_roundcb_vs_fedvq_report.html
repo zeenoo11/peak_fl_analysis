@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>v09 — RoundCB vs FedVQ 한눈 비교</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171b22; --panel2:#1d2230; --line:#2a3140;
+    --ink:#e7ecf3; --mut:#9aa6b8; --dim:#6b7689;
+    --cb:#f2a23c;   /* RoundCB accent (amber) */
+    --vq:#5cc8ff;   /* FedVQ accent (cyan) */
+    --proto:#b48cff;/* FedProto accent (violet) */
+    --ok:#5fd38a; --no:#ff7a8a;
+    --mono:"SFMono-Regular",ui-monospace,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI","Pretendard","Malgun Gothic",sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+  header.top{border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:30px}
+  h1{font-size:27px;margin:0 0 6px;letter-spacing:-.3px}
+  .sub{color:var(--mut);font-size:15px}
+  .thesis{margin-top:16px;padding:14px 18px;background:var(--panel);
+    border-left:3px solid var(--proto);border-radius:0 8px 8px 0;font-size:14.5px}
+  h2{font-size:20px;margin:46px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:16px;margin:26px 0 10px;color:var(--ink)}
+  p{margin:10px 0}
+  code{font-family:var(--mono);font-size:.86em;background:#222836;padding:1px 6px;border-radius:5px;color:#cdd6e6}
+  .mut{color:var(--mut)} .dim{color:var(--dim)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.4px;
+    padding:2px 9px;border-radius:20px;vertical-align:middle}
+  .tag.cb{background:rgba(242,162,60,.16);color:var(--cb);border:1px solid rgba(242,162,60,.4)}
+  .tag.vq{background:rgba(92,200,255,.14);color:var(--vq);border:1px solid rgba(92,200,255,.4)}
+  .tag.pr{background:rgba(180,140,255,.14);color:var(--proto);border:1px solid rgba(180,140,255,.4)}
+
+  /* at-a-glance table */
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.6px}
+  th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  thead th{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);
+    border-bottom:2px solid var(--line)}
+  th.col-cb{color:var(--cb)} th.col-vq{color:var(--vq)}
+  td.k{color:var(--mut);font-weight:600;width:18%}
+  td.cb{background:rgba(242,162,60,.045)}
+  td.vq{background:rgba(92,200,255,.045)}
+  tbody tr:hover td{background:#1a1f2b}
+  .yes{color:var(--ok);font-weight:700} .nope{color:var(--no);font-weight:700}
+
+  /* two-column cards */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .card.cb{border-top:3px solid var(--cb)}
+  .card.vq{border-top:3px solid var(--vq)}
+  .card h3{margin-top:0}
+  .card ul{margin:8px 0 0;padding-left:18px} .card li{margin:6px 0;font-size:13.6px}
+
+  /* flow diagram */
+  .flow{font-family:var(--mono);font-size:12.5px;background:#0b0e13;border:1px solid var(--line);
+    border-radius:10px;padding:16px 18px;margin:14px 0;white-space:pre;overflow-x:auto;color:#c7d2e4}
+  .flow .cbk{color:var(--cb)} .flow .vqk{color:var(--vq)} .flow .prk{color:var(--proto)}
+  .flow .warn{color:var(--no)} .flow .ok{color:var(--ok)} .flow .gr{color:var(--dim)}
+
+  /* ladder */
+  .ladder{margin:14px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ladder .row{display:grid;grid-template-columns:62px 1fr 90px 90px 1fr;gap:0;
+    border-bottom:1px solid var(--line);font-size:13px}
+  .ladder .row:last-child{border-bottom:0}
+  .ladder .row.head{background:var(--panel2);color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+  .ladder .row > div{padding:9px 12px;border-right:1px solid var(--line);display:flex;align-items:center}
+  .ladder .row > div:last-child{border-right:0}
+  .ladder .id{font-family:var(--mono);font-weight:700}
+  .ladder .row.hl{background:rgba(92,200,255,.07)}
+  .ladder .row.anc{background:rgba(180,140,255,.07)}
+
+  .note{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--cb);
+    border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0;font-size:13.8px}
+  .note.warn{border-left-color:var(--no)}
+  .note b{color:var(--ink)}
+  .footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+  .legend{font-size:12px;color:var(--mut);margin:6px 0 0}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}.ladder .row{grid-template-columns:50px 1fr;}
+    .ladder .row > div:nth-child(n+3){display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>v09 코드북 두 갈래 — <span style="color:var(--cb)">RoundCB</span> vs <span style="color:var(--vq)">FedVQ</span></h1>
+  <div class="sub">NBEATSx residual 흐름 × FedProto prototype memory 관점에서 본 한눈 비교 · 2026-05-26</div>
+  <div class="thesis">
+    한 문장 요약 — <b>RoundCB</b>는 backbone이 <b>설명하지 못한 잔차(residual)를 사후에 사전(dictionary)으로 저장</b>하는
+    <span class="tag cb">post-hoc</span> 메모리이고, <b>FedVQ</b>는 그 사전을 <b>학습 중에 backbone과 함께 키우는</b>
+    <span class="tag vq">co-train</span> 메모리다. 둘 다 FedProto의 <i>count-weighted prototype 집계</i>를 계보로 삼지만,
+    <b>FedVQ만이 codebook을 backbone 표현(h<sub>g</sub>)에 되먹임</b>한다.
+  </div>
+</header>
+
+<!-- ============ 0. 개념 다리 ============ -->
+<h2>0. 개념적 다리 — Residual을 버리지 않고 Prototype Memory에 축적</h2>
+<p>
+NBEATSx는 <b>iterative residual decomposition</b>이다. 각 stack이 설명한 backcast를 빼고, 남은 잔차
+<code>y<sup>back</sup><sub>s,b</sub> = y<sup>back</sup><sub>s,b−1</sub> − ŷ<sup>back</sup><sub>s,b</sub></code>를 다음 stack으로 넘긴다.
+잔차에는 rare pattern · client-specific dynamics · regime shift 같은 <b>"아직 압축되지 않은 latent knowledge"</b>가 남는다.
+</p>
+<p>
+두 driver 모두 이 잔차를 <b>generic stack의 hidden <code>h_generic ∈ ℝ⁶⁴</code></b>로 포착하고
+(NBEATS에서 generic stack은 trend·seasonal이 못 설명한 부분을 담당 → 잔차 표현에 가장 가깝다),
+이를 <b>codebook</b>이라는 latent dictionary에 모은다. 그리고 cluster-mean <b>forecast 잔차</b>를 <code>offsets ∈ ℝ^{M×24}</code>로
+저장해 예측을 보정한다 — 보내주신 "residual → prototype memory" 그림이 코드에서 실제로 구현된 지점이다.
+<b>차이는 그 dictionary를 "언제, gradient와 함께 키우느냐"</b>에 있다.</p>
+
+<!-- ============ 1. 한눈 비교표 ============ -->
+<h2>1. 한눈 비교표</h2>
+<table>
+  <thead>
+    <tr><th>항목</th><th class="col-cb">V9-RoundCB <span class="tag cb">post-hoc</span></th>
+        <th class="col-vq">V9-FedVQ <span class="tag vq">co-train</span></th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="k">파일</td>
+        <td class="cb"><code>03_fl_per_round_codebook.py</code></td>
+        <td class="vq"><code>02_fl_vq_dynamics.py</code></td></tr>
+    <tr><td class="k">한 줄 정체</td>
+        <td class="cb">매 라운드 끝에 새로 fit하는 <b>사후 잔차 사전</b></td>
+        <td class="vq">backbone과 함께 자라는 <b>학습형 VQ 메모리</b></td></tr>
+    <tr><td class="k">codebook 학습 방식</td>
+        <td class="cb">classical statistics — 2-stage federated KMeans + cluster-mean residual. <b class="nope">gradient 無</b></td>
+        <td class="vq">learnable — straight-through quantization + <b>commitment loss</b> β=0.25. <b class="yes">gradient 有</b></td></tr>
+    <tr><td class="k">backbone ↔ codebook</td>
+        <td class="cb"><b class="nope">분리</b> — forward가 codebook을 절대 통과 안 함 (<code>03</code> docstring)</td>
+        <td class="vq"><b class="yes">결합</b> — h<sub>g</sub>가 codebook으로 quantize되고 그 loss가 backbone에 흐름</td></tr>
+    <tr><td class="k">codebook이 h<sub>g</sub>를 형성?</td>
+        <td class="cb"><span class="nope">아니오</span> — backbone은 codebook을 모르고 학습</td>
+        <td class="vq"><span class="yes">예</span> — commit loss가 h<sub>g</sub>를 codebook entry 쪽으로 당김</td></tr>
+    <tr><td class="k">forecast에 영향 경로</td>
+        <td class="cb"><b>offset 보정만</b>: ŷ + α·offset[1-NN(h<sub>g</sub>)], α=1.0</td>
+        <td class="vq"><b>quantization(co-train)으로</b>. <span class="dim">offset 보정은 별도 단계(plan §4), <code>02</code>엔 미적용</span></td></tr>
+    <tr><td class="k">서버 집계</td>
+        <td class="cb">2-stage 계층적 federated KMeans, <b>라운드마다 새로</b> fit</td>
+        <td class="vq"><b>mass-weighted</b> + EMA blend(γ=0.95) + dead-code respawn</td></tr>
+    <tr><td class="k">collapse 방지</td>
+        <td class="cb">불필요 — 매 라운드 처음부터 KMeans</td>
+        <td class="vq"><b>필요</b> — round-start EMA reset · respawn · fedkmeans init (naive FedAvg는 R2에 ppl=1.0 collapse)</td></tr>
+    <tr><td class="k">적용 backbone</td>
+        <td class="cb"><b>5 FL 알고리즘 전부</b> (<code>--algorithm</code>: fedavg/prox/rep/ditto/proto)</td>
+        <td class="vq"><b>FedAvg 전용</b> (<code>:581 weighted_average</code> 하드코딩)</td></tr>
+    <tr><td class="k">FedProto와의 관계</td>
+        <td class="cb">offset 집계가 count-weighted라는 <b>계보</b> 공유 (간접)</td>
+        <td class="vq">commit = FedProto proto-MSE의 <b>VQ판</b> + mass-wt 집계 → <b>직접 일반화</b></td></tr>
+    <tr><td class="k">R/A/C 축 (§3)</td>
+        <td class="cb"><b>A</b>(집계)+<b>C</b>(보정). <b class="nope">R 없음</b></td>
+        <td class="vq"><b>R</b>(표현형성)+<b>A</b>+<b>C</b> 전부</td></tr>
+    <tr><td class="k">v06 가설에서 역할</td>
+        <td class="cb"><b>universality</b> 재현 — codebook이 어떤 backbone에든 직교적 lift (per-round 판)</td>
+        <td class="vq"><b>co-train &gt; post-hoc</b> 검증 — 통합 학습이 사후 stacking을 이기나 (ladder의 B4)</td></tr>
+    <tr><td class="k">per-round 진단</td>
+        <td class="cb">before/after 7-axis metric + <b>ΔPAPE lift</b> / util / perplexity</td>
+        <td class="vq">commit loss · util · perplexity · <b>codebook drift</b> · top1-share · respawn 수</td></tr>
+    <tr><td class="k">핵심 산출물</td>
+        <td class="cb"><code>codebook_log.jsonl</code> (lift_trajectory), <code>codebook_history.pt</code></td>
+        <td class="vq"><code>round_log.jsonl</code> (server_vq), <code>codebook_history.pt</code> (+ema buffers)</td></tr>
+  </tbody>
+</table>
+<p class="legend">색 구분 — <span class="tag cb">amber = RoundCB</span> · <span class="tag vq">cyan = FedVQ</span> · <span class="tag pr">violet = FedProto</span></p>
+
+<!-- ============ 2. 메커니즘 다이어그램 ============ -->
+<h2>2. 메커니즘 다이어그램</h2>
+<div class="cols">
+  <div class="card cb">
+    <h3 style="color:var(--cb)">V9-RoundCB — 사후 잔차 사전</h3>
+    <div class="flow"><span class="cbk">[FL backbone]</span> FedAvg/Prox/Rep/Ditto/Proto
+   NBEATSxAux, <span class="gr">normal training</span>
+        │
+        │  <span class="gr">── 매 라운드 끝 (frozen forward) ──</span>
+        ▼
+   h_g 추출  →  <span class="cbk">Stage-1</span> client KMeans(K=2)
+                   │ (centroids,counts) upload
+                   ▼
+                <span class="cbk">Stage-2</span> server KMeans(M=32)
+                   │
+                   ▼
+              <span class="cbk">codebook (M,64)</span>
+              + cluster-mean 잔차
+              → <span class="cbk">offsets (M,24)</span>
+        ┌──────────────────────────┐
+  test: │ ŷ + α·offset[1-NN(h_g)]   │  α=1.0
+        └──────────────────────────┘
+<span class="warn">⚠ backbone forward는 codebook을 절대 안 거침</span>
+<span class="gr">  (no commit, no gradient — 순수 분석)</span></div>
+    <ul>
+      <li>codebook은 backbone을 <b>관찰</b>만 한다. 표현을 바꾸지 않는다.</li>
+      <li>매 라운드 처음부터 다시 fit → collapse 구조적으로 불가능.</li>
+      <li>5개 backbone에 <b>동일하게</b> 얹어 직교성(universality) 검증.</li>
+    </ul>
+  </div>
+
+  <div class="card vq">
+    <h3 style="color:var(--vq)">V9-FedVQ — 학습형 VQ 메모리</h3>
+    <div class="flow"><span class="vqk">[FedAvg backbone]</span> NBEATSxAuxVQ
+        │
+        ▼
+       h_g ──► <span class="vqk">VQ codebook (EMA)</span>
+        │           │ argmin‖h_g−c‖²
+        │           ▼
+        │       q_h_g  <span class="gr">(straight-through)</span>
+        │           │
+        ▼           ▼
+   <span class="vqk">commit = β·‖h_g − sg(q)‖²</span>   β=0.25
+        │
+        ▼
+   <span class="ok">L = MAE + commit + λ·aux</span>  →  backward
+        │                              <span class="ok">(co-train!)</span>
+        ▼
+   server: <span class="vqk">mass-weighted</span> + EMA blend(γ=.95)
+           + <span class="vqk">dead-code respawn</span>(매 K round)
+<span class="warn">⚠ codebook이 h_g를 형성한다</span>
+<span class="gr">  offset 보정은 별도 단계(plan §4), 02엔 없음</span></div>
+    <ul>
+      <li>codebook과 backbone이 <b>같은 gradient</b>로 co-train된다.</li>
+      <li>collapse를 막기 위한 3중 장치(EMA reset·respawn·fedkmeans init) 필요.</li>
+      <li>현재 FedAvg backbone 전용 — 5종 확장은 §4 ladder의 설계 결정.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ 3. R/A/C 분해 ============ -->
+<h2>3. 세 직교 메커니즘으로 분해 (R / A / C)</h2>
+<p>두 driver의 차이는 결국 세 축의 on/off로 환원된다:</p>
+<table>
+  <thead><tr><th style="width:8%">축</th><th style="width:30%">의미</th>
+    <th class="col-cb">RoundCB</th><th class="col-vq">FedVQ</th></tr></thead>
+  <tbody>
+    <tr><td class="k">R</td><td>cluster 구조가 <b>학습 중 loss로 backbone에 되먹임</b>되는가</td>
+        <td class="cb"><span class="nope">✗ 없음</span> — h<sub>g</sub>는 codebook을 모름</td>
+        <td class="vq"><span class="yes">✓ commitment loss</span> = FedProto proto-MSE의 VQ판</td></tr>
+    <tr><td class="k">A</td><td>client 간 cluster를 <b>어떻게 집계</b>하나</td>
+        <td class="cb">2-stage KMeans (count-weighted Stage-2)</td>
+        <td class="vq">mass(count)-weighted + EMA blend</td></tr>
+    <tr><td class="k">C</td><td>test에서 <b>cluster-mean 잔차 offset을 더하나</b></td>
+        <td class="cb"><span class="yes">✓ ŷ+α·offset</span> (출력에 영향 주는 유일 경로)</td>
+        <td class="vq"><span class="dim">△ plan엔 있으나 02 미구현</span></td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <b>비대칭의 본질:</b> RoundCB는 <b>출력은 보정하지만 표현은 안 건드리고</b>(A+C),
+  FedVQ는 <b>표현은 형성하지만 출력 보정은 (아직) 안 한다</b>(R+A). 즉 두 driver는 같은 codebook을
+  서로 <b>반대쪽 끝</b>에서 쓰고 있다. 둘을 합치면 "표현 형성 + 출력 보정을 같은 학습형 codebook으로 통합"이 되는데,
+  그것이 v09가 노리는 종착점(아래 B4)이다.
+</div>
+
+<!-- ============ 4. FedProto 가설 포지션 / ladder ============ -->
+<h2>4. FedProto의 가설적 포지션 — co-train의 <span class="tag pr">선례·ablation</span></h2>
+<p>
+FedProto는 prototype을 <code>λ·MSE(h_g, proto[c])</code>로 backbone에 되먹이고(=R축) count-weighted로 집계한다(=A축).
+<b>FedVQ는 이 둘을 그대로 일반화</b>한 것이다: (i) KMeans centroid+MSE → 학습형 VQ codebook, (ii) representation-only → 표현+출력 보정 통합.
+따라서 FedProto는 "또 하나의 backbone"이 아니라 <b>co-train clustering의 published 선례(AAAI 2022)이자 representation-only ablation</b>으로 앉는다.
+</p>
+
+<div class="ladder">
+  <div class="row head"><div>cell</div><div>구성</div><div>R</div><div>C</div><div>검증 질문 / v06 결과</div></div>
+  <div class="row"><div class="id">B0</div><div>FedAvg</div><div class="nope">✗</div><div class="nope">✗</div><div>baseline · 51.4 PAPE</div></div>
+  <div class="row"><div class="id">B1</div><div>FedAvg + post-hoc codebook <span class="tag cb">RoundCB</span></div><div class="nope">✗</div><div class="yes">✓</div><div>보정만으로 lift? → <b>yes, −5 PAPE</b></div></div>
+  <div class="row anc"><div class="id">B2</div><div>FedProto <span class="tag pr">ancestor</span></div><div class="yes">✓<small>(MSE)</small></div><div class="nope">✗</div><div>co-train repr 단독 이득? → <b>no(FedAvg와 동률)</b></div></div>
+  <div class="row anc"><div class="id">B3</div><div>FedProto + post-hoc codebook</div><div class="yes">✓<small>(MSE)</small></div><div class="yes">✓<small>(별도)</small></div><div>cluster-friendly h<sub>g</sub>가 codebook을 키우나? → inertia 194(최저)지만 ΔPAPE 이득 無</div></div>
+  <div class="row hl"><div class="id">B4</div><div>FedVQ on FedAvg <span class="tag vq">v09 메인</span></div><div class="yes">✓<small>(VQ)</small></div><div class="yes">✓<small>(통합)</small></div><div><b>통합 co-train이 post-hoc(B1)을 이기나?</b> ← v09 핵심 가설</div></div>
+  <div class="row"><div class="id">B5</div><div>FedVQ on FedProto</div><div class="yes">✓✓<small>(이중)</small></div><div class="yes">✓</div><div>redundancy ceiling — 보조 ablation (메인 아님)</div></div>
+</div>
+
+<div class="note">
+  <b>왜 RoundCB와 FedVQ가 둘 다 필요한가:</b> v09의 진짜 주장은 단일 셀이 아니라 <b>B4 vs B1</b> 비교다.
+  RoundCB(B1)가 <b>"같은 codebook을 사후로 썼을 때의 lift"</b>를 측정하는 통제군이고, FedVQ(B4)가 <b>"co-train으로 통합했을 때의 lift"</b>를 측정한다.
+  FedProto(B2·B3)는 그 사이에서 <b>"표현은 co-train했지만 통합은 안 한"</b> 중간 칸으로, B4가 이기면 이득의 출처를
+  "표현+보정을 하나의 학습형 codebook으로 통합한 것"이라고 귀속시켜 준다.
+</div>
+
+<!-- ============ 5. 구현 vs 계획 ============ -->
+<h2>5. 구현 현황 vs 계획 (정직 박스)</h2>
+<div class="note warn">
+  보고서를 실험에 그대로 쓰기 전 반드시 인지할 두 gap:
+  <ul style="margin:8px 0 0">
+    <li><b>FedVQ는 현재 FedAvg backbone 전용.</b> plan G2/Phase 1은 5종 전부(B-FedAvg…B-FedProto)를 적었지만
+        <code>02</code>는 <code>weighted_average</code> 하드코딩이라 알고리즘 스위치가 없다. B5(FedProto+FedVQ)는 코드 확장 필요.</li>
+    <li><b>FedVQ는 offset 보정(C축)을 아직 안 쓴다.</b> <code>02</code>의 <code>_eval_per_client</code>는 raw ŷ만 평가한다.
+        plan §4의 <code>08_apply_correction.py</code>(미구현)가 offset을 붙이는 별도 단계다.
+        따라서 현 시점 B4의 lift는 <b>순수 co-train(R) 효과</b>이지 "통합 보정"의 완전체가 아니다.</li>
+  </ul>
+</div>
+
+<!-- ============ 6. v06 정합성 ============ -->
+<h2>6. v06 핵심 가설과의 정합성</h2>
+<p>
+미세한 긴장이 하나 있다. v06의 중심 주장은 <b>"codebook은 method-agnostic·orthogonal 보정 모듈"</b>(어떤 backbone에든 균등 lift)이다.
+FedProto를 동족 ancestor로 격상하고 co-train을 메인으로 삼으면 "codebook이 FedProto식 clustering과 특별한 관계가 있다"는 뉘앙스가 생긴다.
+</p>
+<p>해소는 <b>두 층위 분리</b>로 한다:</p>
+<ul>
+  <li><b>v06 층위(post-hoc·보존):</b> "보정 모듈은 어떤 backbone에든 재사용 가능한 직교 lift" — RoundCB가 per-round로 재현(B1, universality).</li>
+  <li><b>v09 층위(co-train·신규):</b> "그 보정을 <i>co-train</i>하면(FedProto가 선례를 보인 방식) post-hoc 대비 추가 이득" — FedVQ가 검증(B4&gt;B1).</li>
+</ul>
+<p>이렇게 하면 v06 universality를 부정하지 않고 그 위에 v09를 쌓는다. FedProto는 두 층위를 잇는 다리가 된다.</p>
+
+<!-- ============ 7. 다음 단계 ============ -->
+<h2>7. 권고 / 다음 단계</h2>
+<ol>
+  <li><b>메인 결과는 B4(FedVQ on FedAvg)</b>에서 isolation, <b>B1(RoundCB)</b>을 직접 통제군으로 나란히 보고.</li>
+  <li><b>FedProto는 B2/B3 ladder 칸</b>으로 배치 — novelty 방어 + R-only ablation.</li>
+  <li><b>FedVQ에 offset 보정(C) 추가</b>(<code>08_apply_correction.py</code>)해 B4를 "통합 보정" 완전체로 만든 뒤 B1과 비교해야 가설이 완결된다.</li>
+  <li><b>B5(FedProto+FedVQ)</b>는 page budget 되면 redundancy ceiling ablation으로만.</li>
+  <li>논문 키워드 후보: <i>Residual Prototype Memory · Prototype-guided Residual Forecasting · Federated Residual Codebook</i>.</li>
+</ol>
+
+<div class="footer">
+  근거 코드 — <code>experiments/v09_round_vq_codebook/02_fl_vq_dynamics.py</code> ·
+  <code>03_fl_per_round_codebook.py</code> · <code>src/fl/fedproto.py</code> · <code>src/fl/codebook_fl.py</code><br>
+  맥락 — <code>papers/v06_draft/v06_round_dynamics.md</code> (§5.1 universality, §5.6 FedProto inertia 194) ·
+  <code>plans/v09-01_round_wise_codebook.md</code> · FedProto arXiv:2105.00243 · VQ-VAE arXiv:1711.00937<br>
+  생성 — 2026-05-26 · 실험 수치는 v06/v08 기준이며 v09 FedVQ의 PAPE는 미확정(가설).
+</div>
+
+</div>
+</body>
+</html>
